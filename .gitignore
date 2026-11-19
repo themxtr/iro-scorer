@@ -1,0 +1,41 @@
+# Local environment files
+.env
+.env.*
+!.env.example
+*.local
+
+# Firebase and cloud credentials
+firebase-adminsdk-*.json
+serviceAccount*.json
+service-account*.json
+**/*credentials*.json
+**/*secret*.json
+
+# Private keys and signing material
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa
+id_ed25519
+
+# Local Firebase state and logs
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+*.log
+
+# Dependencies, build output, and caches
+node_modules/
+dist/
+build/
+coverage/
+.cache/
+.vite/
+
+# OS metadata
+.DS_Store
+Thumbs.db
