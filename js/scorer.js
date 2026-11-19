@@ -6,7 +6,7 @@ import { initThemeToggle } from "./theme.js";
 
 const validConfig = firebaseConfig.projectId !== "YOUR_PROJECT_ID";
 const allowedScorerEmail = "scorer@iro2026.in";
-let db, auth, Firestore, localStore = new LocalStore();
+let db, auth, Firestore, GoogleAuthProvider, signInWithPopup, signOut, localStore = new LocalStore();
 let teams = [], results = [], selectedCategory = null, selectedTeam = null, selectedRound = null, sheetApi = null, currentTotal = 0, firestoreReady = false, localMode = false;
 
 const $ = id => document.getElementById(id);
@@ -25,6 +25,9 @@ async function initFirebase() {
     ]);
     const app = appModule.initializeApp(firebaseConfig);
     auth = authModule.getAuth(app);
+    GoogleAuthProvider = authModule.GoogleAuthProvider;
+    signInWithPopup = authModule.signInWithPopup;
+    signOut = authModule.signOut;
     db = firestoreModule.getFirestore(app);
     Firestore = firestoreModule;
     firestoreReady = true;
@@ -33,7 +36,8 @@ async function initFirebase() {
       if (user && !isAuthorizedScorer(user)) {
         $("authStatus").textContent = "Unauthorized account";
         $("authButton").textContent = "Sign in";
-        toast(`Only verified ${allowedScorerEmail} can score.`);
+        $("authError").textContent = `No entry. Only verified ${allowedScorerEmail} is allowed.`;
+        toast(`No entry. Only verified ${allowedScorerEmail} is allowed.`);
         authModule.signOut(auth).catch(error => toast(`Could not sign out: ${error.message}`));
         return;
       }
@@ -228,24 +232,26 @@ $("historyCategory").addEventListener("change",refreshHistory);$("historySearch"
 
 $("authDialog").addEventListener("close",()=>{});
 $("authButton").addEventListener("click",async()=>{
-  if(auth&&auth.currentUser){await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js").then(m=>m.signOut(auth));return;}
+  if(auth&&auth.currentUser){await signOut(auth);return;}
   if(!auth){toast("Configure Firebase before signing in.");return;}
+  $("authError").textContent="";
   $("authDialog").showModal();
 });
 $("authCancel").addEventListener("click",()=>$("authDialog").close());
-$("authForm").addEventListener("submit",async event=>{
-  event.preventDefault();
+$("googleSignIn").addEventListener("click",async()=>{
   try{
-    const {signInWithEmailAndPassword}=await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js");
-    const credential=await signInWithEmailAndPassword(auth,$("authEmail").value,$("authPassword").value);
+    const provider=new GoogleAuthProvider();
+    provider.setCustomParameters({prompt:"select_account"});
+    const credential=await signInWithPopup(auth,provider);
     if(!isAuthorizedScorer(credential.user)){
-      const {signOut}=await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js");
-      await signOut(auth);
-      $("authError").textContent=`Only verified ${allowedScorerEmail} is authorized to score.`;
+      $("authError").textContent=`No entry. Only verified ${allowedScorerEmail} is allowed.`;
       return;
     }
     $("authDialog").close();
-  }catch(error){$("authError").textContent=error.message;}
+  }catch(error){
+    if(error.code==="auth/popup-closed-by-user")return;
+    $("authError").textContent=error.message;
+  }
 });
 
 function refreshAll(){renderTeams();refreshHistory();renderDashboard();}

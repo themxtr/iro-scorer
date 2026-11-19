@@ -119,14 +119,15 @@
   </main>
 
   <dialog id="authDialog">
-    <form id="authForm" method="dialog">
+    <div class="auth-dialog-content">
       <h2>Scorer Sign In</h2>
-      <p class="muted">Use an authorized Firebase scorer account.</p>
-      <label>Email<input id="authEmail" type="email" required></label>
-      <label>Password<input id="authPassword" type="password" required></label>
+      <p class="muted">Continue with Google. Only the authorized scorer account is allowed.</p>
       <p id="authError" class="error"></p>
-      <div class="dialog-actions"><button class="button secondary" value="cancel" type="button" id="authCancel">Cancel</button><button class="button primary" type="submit">Sign in</button></div>
-    </form>
+      <div class="dialog-actions">
+        <button class="button secondary" type="button" id="authCancel">Cancel</button>
+        <button class="button primary" type="button" id="googleSignIn">Continue with Google</button>
+      </div>
+    </div>
   </dialog>
   <div id="toast" class="toast"></div>
   <script type="module" src="js/scorer.js"></script>
