@@ -31,14 +31,14 @@ async function initFirebase() {
     db = firestoreModule.getFirestore(app);
     Firestore = firestoreModule;
     firestoreReady = true;
-    $("connectionStatus").textContent = "Firebase connected · live";
+    $("connectionStatus").textContent = "Live updates connected";
     authModule.onAuthStateChanged(auth, user => {
       if (user && !isAuthorizedScorer(user)) {
         $("authStatus").textContent = "Unauthorized account";
         $("authButton").textContent = "Sign in";
         $("authError").textContent = `No entry. Only verified ${allowedScorerEmail} is allowed.`;
         toast(`No entry. Only verified ${allowedScorerEmail} is allowed.`);
-        authModule.signOut(auth).catch(error => toast(`Could not sign out: ${error.message}`));
+        authModule.signOut(auth).catch(() => toast("Could not sign out. Please try again."));
         return;
       }
       updateAuth(user);
@@ -46,9 +46,9 @@ async function initFirebase() {
     firestoreModule.onSnapshot(firestoreModule.collection(db,"teams"), snap => { teams=snap.docs.map(d=>({id:d.id,...d.data()})); refreshAll(); }, reportFirebaseError);
     firestoreModule.onSnapshot(firestoreModule.collection(db,"results"), snap => { results=snap.docs.map(d=>({id:d.id,...d.data()})); refreshAll(); }, reportFirebaseError);
   } catch (error) {
-    $("connectionStatus").textContent = "Firebase connection failed";
+    $("connectionStatus").textContent = "Live updates unavailable";
     $("authButton").disabled = true;
-    toast(`Firebase could not start: ${error.message}`);
+    toast("The scorer could not connect. Refresh the page or contact an organizer.");
   }
 }
 function initLocal() {
@@ -57,7 +57,7 @@ function initLocal() {
     teams = await localStore.getTeams(); results = await localStore.getResults();
     refreshAll();
   });
-  $("connectionStatus").textContent = "Local mode · not shared";
+  $("connectionStatus").textContent = "Demo mode";
   $("authStatus").textContent = "Demo only";
   $("authButton").textContent = "Local mode";
   $("authButton").disabled = true;
@@ -74,20 +74,20 @@ function isAuthorizedScorer(user) {
 
 async function saveTeam(team) {
   if (localMode) return localStore.saveTeam(team);
-  if (!firestoreReady) throw new Error("Firebase is not connected. Team changes were not saved.");
+  if (!firestoreReady) throw new Error("Live data is unavailable. Team changes were not saved.");
   if (!isAuthorizedScorer(auth?.currentUser)) throw new Error(`Sign in with verified ${allowedScorerEmail} to manage teams.`);
   await Firestore.setDoc(Firestore.doc(db,"teams",team.id),team);
 }
 async function saveResult(result) {
   if (localMode) return localStore.saveResult(result);
-  if (!firestoreReady) throw new Error("Firebase is not connected. The score was not saved.");
+  if (!firestoreReady) throw new Error("Live data is unavailable. The score was not saved.");
   if (!isAuthorizedScorer(auth?.currentUser)) throw new Error(`Sign in with verified ${allowedScorerEmail} to submit scores.`);
   await Firestore.setDoc(Firestore.doc(db,"results",result.id),result);
 }
 
 function reportFirebaseError(error) {
-  $("connectionStatus").textContent = "Firebase read error";
-  toast(`Firebase error: ${error.message}`);
+  $("connectionStatus").textContent = "Live updates unavailable";
+  toast("Live data is unavailable. Refresh the page or contact an organizer.");
 }
 
 document.querySelectorAll(".nav-item").forEach(button => button.addEventListener("click", () => {
@@ -116,7 +116,9 @@ $("teamForm").addEventListener("submit", async event=>{
     $("teamForm").reset(); $("teamId").value=""; $("teamFormTitle").textContent="Add Team"; $("teamSubmit").textContent="Add Team"; $("teamCancel").classList.add("hidden");
     toast("Team saved");
   } catch (error) {
-    toast(`Could not save team: ${error.message}`);
+    toast(error.code === "permission-denied"
+      ? "No permission to save this team. Sign in with the authorized scorer account."
+      : "Could not save team. Please try again.");
   }
 });
 $("teamCancel").addEventListener("click",()=>{$("teamForm").reset();$("teamId").value="";$("teamFormTitle").textContent="Add Team";$("teamSubmit").textContent="Add Team";$("teamCancel").classList.add("hidden");});
@@ -147,7 +149,9 @@ function renderTeams(){
       await saveTeam({...team,active:false,archivedAt:new Date().toISOString()});
       toast("Team archived");
     } catch (error) {
-      toast(`Could not archive team: ${error.message}`);
+      toast(error.code === "permission-denied"
+        ? "No permission to archive this team. Sign in with the authorized scorer account."
+        : "Could not archive team. Please try again.");
     }
   }));
 }
@@ -214,7 +218,9 @@ $("scoreSheet").addEventListener("submit",async event=>{
   try {
     await saveResult(result);
   } catch (error) {
-    toast(`Could not submit score: ${error.message}`);
+    toast(error.code === "permission-denied"
+      ? "No permission to submit this score. Sign in with the authorized scorer account."
+      : "Could not submit score. Please try again.");
     return;
   }
   toast("Score submitted successfully");
@@ -233,7 +239,7 @@ $("historyCategory").addEventListener("change",refreshHistory);$("historySearch"
 $("authDialog").addEventListener("close",()=>{});
 $("authButton").addEventListener("click",async()=>{
   if(auth&&auth.currentUser){await signOut(auth);return;}
-  if(!auth){toast("Configure Firebase before signing in.");return;}
+  if(!auth){toast("Scoring is temporarily unavailable. Contact an organizer.");return;}
   $("authError").textContent="";
   $("authDialog").showModal();
 });
@@ -250,7 +256,7 @@ $("googleSignIn").addEventListener("click",async()=>{
     $("authDialog").close();
   }catch(error){
     if(error.code==="auth/popup-closed-by-user")return;
-    $("authError").textContent=error.message;
+    $("authError").textContent="Google sign-in is unavailable. Check your connection or contact an organizer.";
   }
 });
 

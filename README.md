@@ -1,6 +1,6 @@
-# ROBO-G Robotics Tournament Management System
+# IRO 2026 Nationals
 
-The app is static HTML/CSS/JavaScript hosted on GitHub Pages. Firebase Firestore is the shared database and pushes team/result changes to both pages in real time. GitHub Pages hosts files only; it does not provide a shared database.
+The mobile-friendly scorer and live results pages are static HTML/CSS/JavaScript hosted on GitHub Pages. The IRO logo is used on both pages and as the site icon. Shared team/result changes update both pages in real time. GitHub Pages hosts files only; it does not provide a shared database.
 
 ## One-time setup
 
@@ -36,7 +36,7 @@ Once deployed, open:
 3. Open the public results URL on the projector/TV.
 4. The public page listens to Firestore snapshots and refreshes the standings automatically after each change. It cycles through Explorer, Innovator, and Techies, advancing through team rows every three seconds and repeating continuously.
 
-Both pages should show a Firebase/Firestore connection status. If the Firebase configuration is still the placeholder, the scorer explicitly runs in local demo mode; browser storage is not shared across devices. If Firebase is configured but cannot connect, the app shows the error instead of silently switching to local data.
+Both pages show a live-update connection status. If the Firebase configuration is still the placeholder, the scorer explicitly runs in local demo mode; browser storage is not shared across devices. If Firebase is configured but cannot connect, the app reports that live data is unavailable instead of silently switching to local data.
 
 The same light/dark toggle is available on both pages. The selected theme is saved in the browser and shared between the scorer and leaderboard on that device.
 

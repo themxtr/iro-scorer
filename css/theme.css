@@ -144,3 +144,27 @@
 :root[data-theme="light"] .step-number {
   color: #ffffff;
 }
+
+.brand-logo {
+  display: block;
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.sidebar-brand .brand-logo {
+  width: 48px;
+  height: 48px;
+}
+
+.organizer-footer {
+  padding: 18px 3vw;
+  color: var(--muted);
+  text-align: center;
+  border-top: 1px solid var(--line);
+}
+
+.organizer-footer strong {
+  color: var(--text);
+}

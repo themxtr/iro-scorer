@@ -35,7 +35,7 @@ async function initFirestore() {
       import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js")
     ]);
     const db = getFirestore(initializeApp(firebaseConfig));
-    document.getElementById("connectionStatus").textContent = "Firestore connected";
+    document.getElementById("connectionStatus").textContent = "Live updates connected";
     onSnapshot(collection(db, "teams"), snapshot => {
       teams = snapshot.docs.map(doc => ({id:doc.id,...doc.data()}));
       render();
@@ -45,19 +45,19 @@ async function initFirestore() {
       render();
     }, reportFirebaseError);
   } catch (error) {
-    document.getElementById("connectionStatus").textContent = `Firestore unavailable: ${error.message}`;
+    document.getElementById("connectionStatus").textContent = "Live updates unavailable";
   }
 }
 function initLocal() {
   store.subscribe(async () => {
     teams = await store.getTeams();
     results = await store.getResults();
-    document.getElementById("connectionStatus").textContent = "Local mode";
+    document.getElementById("connectionStatus").textContent = "Demo mode";
     render();
   });
 }
 function reportFirebaseError(error) {
-  document.getElementById("connectionStatus").textContent = `Firestore error: ${error.message}`;
+  document.getElementById("connectionStatus").textContent = "Live updates unavailable";
 }
 
 function secondsFor(result) {

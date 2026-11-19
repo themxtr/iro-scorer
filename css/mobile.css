@@ -1,0 +1,272 @@
+@media (max-width: 760px) {
+  .public-body .public-header {
+    height: auto;
+    min-height: 64px;
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .public-body .brand {
+    gap: 8px;
+  }
+
+  .public-body .brand-logo {
+    width: 44px;
+    height: 44px;
+  }
+
+  .public-body .brand h1 {
+    font-size: 1rem;
+  }
+
+  .public-body .live-clock {
+    display: none;
+  }
+
+  .public-body .header-actions {
+    gap: 6px;
+  }
+
+  .public-body .theme-toggle,
+  .public-body .icon-button {
+    min-height: 36px;
+    padding: 7px 9px;
+    font-size: .75rem;
+  }
+
+  .public-body .public-main {
+    padding: 12px;
+  }
+
+  .public-body .leaderboard-heading {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .public-body .leaderboard-heading h2 {
+    font-size: 1.35rem;
+  }
+
+  .public-body .leaderboard-meta {
+    justify-content: space-between;
+  }
+
+  .public-body .leaderboard-meta div {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .public-body .leaderboard-meta strong {
+    font-size: 1.3rem;
+  }
+
+  .public-body .leaderboard-wrap {
+    max-height: calc(100vh - 250px);
+    min-height: 180px;
+    overflow: auto;
+  }
+
+  .public-body table {
+    min-width: 680px;
+  }
+
+  .public-body th,
+  .public-body td {
+    padding: 10px;
+    font-size: .88rem;
+  }
+
+  .public-body .leaderboard-footer {
+    padding: 10px 0;
+    gap: 5px;
+    font-size: .85rem;
+  }
+
+  .scorer-body {
+    display: block;
+  }
+
+  .scorer-body .sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    width: 100%;
+    height: auto;
+    padding: 8px 10px;
+    display: grid;
+    gap: 6px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .scorer-body .sidebar-brand {
+    padding: 0 2px;
+    gap: 8px;
+  }
+
+  .scorer-body .sidebar-brand div:last-child {
+    font-size: .8rem;
+  }
+
+  .scorer-body .sidebar-brand .brand-logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .scorer-body .sidebar nav {
+    flex-direction: row;
+    gap: 4px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .scorer-body .nav-item {
+    flex: 0 0 auto;
+    height: auto;
+    padding: 8px 10px;
+    font-size: .78rem !important;
+    white-space: nowrap;
+  }
+
+  .scorer-body .sidebar-status {
+    position: static;
+    font-size: .7rem;
+  }
+
+  .scorer-body .scorer-main {
+    width: 100%;
+    margin: 0;
+    padding: 12px;
+  }
+
+  .scorer-body .scorer-header {
+    height: auto;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .scorer-body .header-actions {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .scorer-body .header-actions .button,
+  .scorer-body .header-actions .icon-button,
+  .scorer-body .header-actions .theme-toggle {
+    min-height: 36px;
+    padding: 7px 9px;
+    font-size: .75rem;
+  }
+
+  .scorer-body .auth-status {
+    font-size: .72rem;
+  }
+
+  .scorer-body .stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .scorer-body .stat-card {
+    padding: 10px 8px;
+  }
+
+  .scorer-body .stat-card span,
+  .scorer-body .stat-card small {
+    font-size: .7rem;
+  }
+
+  .scorer-body .stat-card strong {
+    font-size: 1.4rem;
+  }
+
+  .scorer-body .panel,
+  .scorer-body .workflow-step {
+    padding: 14px;
+  }
+
+  .scorer-body .team-form,
+  .scorer-body .team-list-grid,
+  .scorer-body .score-workflow,
+  .scorer-body .score-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .scorer-body .team-form .button {
+    width: 100%;
+  }
+
+  .scorer-body .search-input {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .scorer-body .history-filters {
+    flex-wrap: wrap;
+  }
+
+  .scorer-body .history-filters select,
+  .scorer-body .history-filters input {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+
+  .scorer-body .history-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    overflow-wrap: anywhere;
+    font-size: .82rem;
+  }
+
+  .scorer-body .timer {
+    font-size: clamp(3rem, 18vw, 5rem);
+  }
+
+  .scorer-body .score-review {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .scorer-body #submitScore {
+    flex: 1 1 100%;
+  }
+
+  .organizer-footer {
+    padding: 14px 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .scorer-body .sidebar nav {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+
+  .scorer-body .nav-item {
+    flex: 1 1 calc(50% - 4px);
+    text-align: center;
+  }
+
+  .public-body .header-actions {
+    gap: 4px;
+  }
+
+  .public-body .theme-toggle,
+  .public-body #fullscreenBtn {
+    padding: 6px;
+    font-size: .7rem;
+  }
+
+  .scorer-body .category-options,
+  .scorer-body .round-options {
+    flex-wrap: wrap;
+  }
+
+  .scorer-body .category-options button,
+  .scorer-body .round-options button {
+    min-width: 42%;
+  }
+}
