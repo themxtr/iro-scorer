@@ -5,7 +5,7 @@ import { RunTimer } from "./timer.js";
 import { initThemeToggle } from "./theme.js";
 
 const validConfig = firebaseConfig.projectId !== "YOUR_PROJECT_ID";
-const allowedScorerEmail = "scorer@iro2026.in";
+const allowedScorerEmail = "robogbangalore@gmail.com";
 let db, auth, Firestore, GoogleAuthProvider, signInWithPopup, signOut, localStore = new LocalStore();
 let teams = [], results = [], selectedCategory = null, selectedTeam = null, selectedRound = null, sheetApi = null, currentTotal = 0, firestoreReady = false, localMode = false;
 
