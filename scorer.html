@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#08111f">
+  <title>ROBO-G Scorer</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="scorer-body">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><div class="brand-mark">R</div><div><strong>ROBO-G</strong><span>SCORER</span></div></div>
+    <nav>
+      <button class="nav-item active" data-view="dashboard" type="button">Dashboard</button>
+      <button class="nav-item" data-view="teams" type="button">Manage Teams</button>
+      <button class="nav-item" data-view="scores" type="button">Enter Scores</button>
+      <button class="nav-item" data-view="history" type="button">Submission History</button>
+    </nav>
+    <div class="sidebar-status"><span class="live-dot"></span><span id="authStatus">Not signed in</span></div>
+  </aside>
+
+  <main class="scorer-main">
+    <header class="scorer-header">
+      <div><span class="eyebrow">SCORER CONSOLE</span><h1 id="viewTitle">Dashboard</h1></div>
+      <div class="header-actions">
+        <a class="icon-button" href="index.html" target="_blank" title="Open live leaderboard">LIVE ↗</a>
+        <button id="authButton" class="button secondary" type="button">Sign in</button>
+      </div>
+    </header>
+
+    <section id="dashboardView" class="view active">
+      <div class="stat-grid" id="dashboardStats"></div>
+      <div class="panel">
+        <div class="panel-heading"><div><span class="eyebrow">QUICK ACTION</span><h2>Start a Run</h2></div></div>
+        <button class="button primary" id="quickScore" type="button">Enter a Score</button>
+      </div>
+    </section>
+
+    <section id="teamsView" class="view">
+      <div class="panel team-form-panel">
+        <div class="panel-heading"><div><span class="eyebrow">TEAM MANAGEMENT</span><h2 id="teamFormTitle">Add Team</h2></div></div>
+        <form id="teamForm" class="team-form">
+          <label>Category<select id="teamCategory" required><option>Explorer</option><option>Innovator</option><option>Techies</option></select></label>
+          <label>Team name<input id="teamName" required maxlength="80" placeholder="Enter team name"></label>
+          <input id="teamId" type="hidden">
+          <button id="teamSubmit" class="button primary" type="submit">Add Team</button>
+          <button id="teamCancel" class="button secondary hidden" type="button">Cancel</button>
+        </form>
+      </div>
+      <div class="panel">
+        <div class="panel-heading">
+          <div><span class="eyebrow">REGISTERED TEAMS</span><h2>Team Directory</h2></div>
+          <input id="teamSearch" class="search-input" placeholder="Search teams…">
+        </div>
+        <div id="teamCategoryCounts" class="category-counts"></div>
+        <div id="teamLists" class="team-list-grid"></div>
+      </div>
+    </section>
+
+    <section id="scoresView" class="view">
+      <div class="score-workflow">
+        <div class="workflow-step">
+          <span class="step-number">1</span><strong>Select Category</strong>
+          <div class="category-options">
+            <button type="button" data-category="Explorer">Explorer</button>
+            <button type="button" data-category="Innovator">Innovator</button>
+            <button type="button" data-category="Techies">Techies</button>
+          </div>
+        </div>
+        <div class="workflow-step">
+          <span class="step-number">2</span><strong>Select Team</strong>
+          <input id="scoreTeamSearch" class="search-input" placeholder="Search teams…">
+          <div id="scoreTeamList" class="team-picker"><p>Select a category first.</p></div>
+        </div>
+        <div class="workflow-step">
+          <span class="step-number">3</span><strong>Select Round</strong>
+          <div class="round-options">
+            <button type="button" data-round="1">Round 1</button>
+            <button type="button" data-round="2">Round 2</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="runPanel" class="panel run-panel hidden">
+        <div class="run-context"><span id="runCategory">—</span><strong id="runTeam">—</strong><span id="runRound">—</span></div>
+        <div class="timer" id="timerDisplay">10:00</div>
+        <div class="timer-actions">
+          <button id="timerStart" class="button primary" type="button">Start</button>
+          <button id="timerStop" class="button danger" type="button">Stop</button>
+          <button id="timerReset" class="button secondary" type="button">Reset</button>
+        </div>
+        <p id="timerStatus" class="muted">Timer ready</p>
+      </div>
+
+      <div id="scoreSheetPanel" class="panel hidden">
+        <div class="panel-heading"><div><span class="eyebrow">OFFICIAL SCORE SHEET</span><h2 id="scoreSheetTitle">Score Entry</h2></div><strong id="scoreMaximum">Maximum: 100</strong></div>
+        <form id="scoreSheet"></form>
+        <div class="score-review">
+          <div><span>Recorded time</span><strong id="recordedTime">Not recorded</strong></div>
+          <div><span>Total score</span><strong id="liveTotal">0</strong></div>
+          <button id="submitScore" class="button primary" type="submit" form="scoreSheet">UPDATE SCORE</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="historyView" class="view">
+      <div class="panel">
+        <div class="panel-heading"><div><span class="eyebrow">DATABASE RECORDS</span><h2>Submission History</h2></div></div>
+        <div class="history-filters">
+          <select id="historyCategory"><option value="">All categories</option><option>Explorer</option><option>Innovator</option><option>Techies</option></select>
+          <input id="historySearch" class="search-input" placeholder="Search team…">
+        </div>
+        <div id="historyList" class="history-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="authDialog">
+    <form id="authForm" method="dialog">
+      <h2>Scorer Sign In</h2>
+      <p class="muted">Use an authorized Firebase scorer account.</p>
+      <label>Email<input id="authEmail" type="email" required></label>
+      <label>Password<input id="authPassword" type="password" required></label>
+      <p id="authError" class="error"></p>
+      <div class="dialog-actions"><button class="button secondary" value="cancel" type="button" id="authCancel">Cancel</button><button class="button primary" type="submit">Sign in</button></div>
+    </form>
+  </dialog>
+  <div id="toast" class="toast"></div>
+  <script type="module" src="js/scorer.js"></script>
+</body>
+</html>

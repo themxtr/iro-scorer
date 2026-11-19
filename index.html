@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#08111f">
+  <title>ROBO-G Live Results</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="public-body">
+  <header class="public-header">
+    <div class="brand">
+      <div class="brand-mark">R</div>
+      <div><span class="eyebrow">ROBO-G</span><h1>LIVE RESULTS</h1></div>
+    </div>
+    <div class="header-actions">
+      <div class="live-clock"><span class="live-dot"></span><span id="liveClock">--:--:--</span></div>
+      <button id="fullscreenBtn" class="icon-button" type="button" title="Full screen">⛶</button>
+    </div>
+  </header>
+
+  <main class="public-main">
+    <nav class="category-tabs" aria-label="Tournament categories">
+      <button class="category-tab active" data-category="Explorer" type="button">Explorer</button>
+      <button class="category-tab" data-category="Innovator" type="button">Innovator</button>
+      <button class="category-tab" data-category="Techies" type="button">Techies</button>
+    </nav>
+
+    <section class="leaderboard-shell">
+      <div class="leaderboard-heading">
+        <div>
+          <span class="eyebrow">TOURNAMENT STANDINGS</span>
+          <h2 id="leaderboardTitle">Explorer Leaderboard</h2>
+        </div>
+        <div class="leaderboard-meta">
+          <div><span>Registered</span><strong id="registeredCount">0</strong></div>
+          <div><span>Participated</span><strong id="participatedCount">0</strong></div>
+          <div><span>Yet to Play</span><strong id="pendingCount">0</strong></div>
+        </div>
+      </div>
+
+      <div class="leaderboard-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th><th>Team Name</th><th>Round 1</th><th>Time</th>
+              <th>Round 2</th><th>Time</th><th>Best Score</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody"></tbody>
+        </table>
+      </div>
+      <footer class="leaderboard-footer">
+        <div>Current leader: <strong id="leaderName">—</strong></div>
+        <div>Last updated: <strong id="lastUpdated">—</strong></div>
+      </footer>
+    </section>
+  </main>
+
+  <div id="connectionStatus" class="connection-status">Connecting…</div>
+  <script type="module" src="js/leaderboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isScorer() {
+      return request.auth != null
+        && request.auth.token.scorer == true;
+    }
+
+    match /teams/{teamId} {
+      allow read: if true;
+      allow create, update, delete: if isScorer();
+    }
+
+    match /results/{resultId} {
+      allow read: if true;
+      allow create, update: if isScorer();
+      allow delete: if false;
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isScorer();
+    }
+  }
+}
