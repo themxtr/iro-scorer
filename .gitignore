@@ -41,3 +41,6 @@ coverage/
 # OS metadata
 .DS_Store
 Thumbs.db
+
+# Local scoring reference document
+/scoresheets.pdf

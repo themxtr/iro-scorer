@@ -199,8 +199,12 @@ document.querySelectorAll(".round-options button").forEach(button=>button.addEve
   $("runPanel").classList.remove("hidden");$("scoreSheetPanel").classList.add("hidden");
   $("recordedTime").textContent="Not recorded";
   $("scoreSheetTitle").textContent=`${selectedCategory} Score Sheet`;
-  $("scoreMaximum").textContent=`Maximum: ${CATEGORIES[selectedCategory].max}`;
-  sheetApi=createScoreSheet(selectedCategory,$("scoreSheet"),total=>{$("liveTotal").textContent=total;currentTotal=total;});
+  sheetApi=createScoreSheet(
+    selectedCategory,
+    $("scoreSheet"),
+    total=>{$("liveTotal").textContent=total;currentTotal=total;},
+    maximum=>{$("scoreMaximum").textContent=`Maximum: ${maximum}`;}
+  );
   // Existing result is shown only at submission for explicit replacement confirmation.
 }));
 

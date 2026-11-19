@@ -32,7 +32,7 @@ Once deployed, open:
 ### 3. Use it live
 
 1. Sign in on `scorer.html` using an authorized scorer account.
-2. Add teams, then submit their round scores.
+2. Add teams, select the Explorer task being scored, enter its criteria (including per-item counts), then submit the round score.
 3. Open the public results URL on the projector/TV.
 4. The public page listens to Firestore snapshots and refreshes the standings automatically after each change. It cycles through Explorer, Innovator, and Techies, advancing through team rows every three seconds and repeating continuously.
 
