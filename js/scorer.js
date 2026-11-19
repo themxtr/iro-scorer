@@ -5,7 +5,7 @@ import { RunTimer } from "./timer.js";
 
 const validConfig = firebaseConfig.projectId !== "YOUR_PROJECT_ID";
 let db, auth, Firestore, localStore = new LocalStore();
-let teams = [], results = [], selectedCategory = null, selectedTeam = null, selectedRound = null, sheetApi = null, currentTotal = 0, firestoreReady = false;
+let teams = [], results = [], selectedCategory = null, selectedTeam = null, selectedRound = null, sheetApi = null, currentTotal = 0, firestoreReady = false, localMode = false;
 
 const $ = id => document.getElementById(id);
 const categories = ["Explorer","Innovator","Techies"];
@@ -25,20 +25,24 @@ async function initFirebase() {
     db = firestoreModule.getFirestore(app);
     Firestore = firestoreModule;
     firestoreReady = true;
+    $("connectionStatus").textContent = "Firebase connected · live";
     authModule.onAuthStateChanged(auth, user => updateAuth(user));
-    firestoreModule.onSnapshot(firestoreModule.collection(db,"teams"), snap => { teams=snap.docs.map(d=>({id:d.id,...d.data()})); refreshAll(); });
-    firestoreModule.onSnapshot(firestoreModule.collection(db,"results"), snap => { results=snap.docs.map(d=>({id:d.id,...d.data()})); refreshAll(); });
+    firestoreModule.onSnapshot(firestoreModule.collection(db,"teams"), snap => { teams=snap.docs.map(d=>({id:d.id,...d.data()})); refreshAll(); }, reportFirebaseError);
+    firestoreModule.onSnapshot(firestoreModule.collection(db,"results"), snap => { results=snap.docs.map(d=>({id:d.id,...d.data()})); refreshAll(); }, reportFirebaseError);
   } catch (error) {
-    initLocal();
+    $("connectionStatus").textContent = "Firebase connection failed";
+    $("authButton").disabled = true;
+    toast(`Firebase could not start: ${error.message}`);
   }
 }
 function initLocal() {
+  localMode = true;
   localStore.subscribe(async () => {
     teams = await localStore.getTeams(); results = await localStore.getResults();
-    $("authStatus").textContent = "Local demo mode";
     refreshAll();
   });
-  $("authStatus").textContent = "Local demo mode";
+  $("connectionStatus").textContent = "Local mode · not shared";
+  $("authStatus").textContent = "Demo only";
   $("authButton").textContent = "Local mode";
   $("authButton").disabled = true;
 }
@@ -49,12 +53,19 @@ function updateAuth(user) {
 }
 
 async function saveTeam(team) {
-  if (firestoreReady) await Firestore.setDoc(Firestore.doc(db,"teams",team.id),team);
-  else await localStore.saveTeam(team);
+  if (localMode) return localStore.saveTeam(team);
+  if (!firestoreReady) throw new Error("Firebase is not connected. Team changes were not saved.");
+  await Firestore.setDoc(Firestore.doc(db,"teams",team.id),team);
 }
 async function saveResult(result) {
-  if (firestoreReady) await Firestore.setDoc(Firestore.doc(db,"results",result.id),result);
-  else await localStore.saveResult(result);
+  if (localMode) return localStore.saveResult(result);
+  if (!firestoreReady) throw new Error("Firebase is not connected. The score was not saved.");
+  await Firestore.setDoc(Firestore.doc(db,"results",result.id),result);
+}
+
+function reportFirebaseError(error) {
+  $("connectionStatus").textContent = "Firebase read error";
+  toast(`Firebase error: ${error.message}`);
 }
 
 document.querySelectorAll(".nav-item").forEach(button => button.addEventListener("click", () => {
@@ -78,9 +89,13 @@ $("teamForm").addEventListener("submit", async event=>{
   if(duplicate)return toast("That team name already exists in this category.");
   const team=id?teams.find(item=>item.id===id):{id:crypto.randomUUID(),registeredAt:new Date().toISOString()};
   if(!team)return;
-  await saveTeam({...team,name,category,active:true});
-  $("teamForm").reset(); $("teamId").value=""; $("teamFormTitle").textContent="Add Team"; $("teamSubmit").textContent="Add Team"; $("teamCancel").classList.add("hidden");
-  toast("Team saved");
+  try {
+    await saveTeam({...team,name,category,active:true});
+    $("teamForm").reset(); $("teamId").value=""; $("teamFormTitle").textContent="Add Team"; $("teamSubmit").textContent="Add Team"; $("teamCancel").classList.add("hidden");
+    toast("Team saved");
+  } catch (error) {
+    toast(`Could not save team: ${error.message}`);
+  }
 });
 $("teamCancel").addEventListener("click",()=>{$("teamForm").reset();$("teamId").value="";$("teamFormTitle").textContent="Add Team";$("teamSubmit").textContent="Add Team";$("teamCancel").classList.add("hidden");});
 $("teamSearch").addEventListener("input",renderTeams);
@@ -106,8 +121,12 @@ function renderTeams(){
     const team=teams.find(item=>item.id===button.dataset.archive); if(!team)return;
     const hasResults=results.some(result=>result.teamId===team.id);
     if(!confirm(hasResults?"This team has submitted results. Archive it and preserve its history?":"Archive this team?"))return;
-    await saveTeam({...team,active:false,archivedAt:new Date().toISOString()});
-    toast("Team archived");
+    try {
+      await saveTeam({...team,active:false,archivedAt:new Date().toISOString()});
+      toast("Team archived");
+    } catch (error) {
+      toast(`Could not archive team: ${error.message}`);
+    }
   }));
 }
 
@@ -170,7 +189,13 @@ $("scoreSheet").addEventListener("submit",async event=>{
     roundNumber:selectedRound,timeLimit:CATEGORIES[selectedCategory].timeLimit,actualTimeTaken:timer.actualSeconds,
     taskBreakdown:sheetApi.getBreakdown(),totalScore:currentTotal,submissionTimestamp:new Date().toISOString()
   };
-  await saveResult(result);toast("Score submitted successfully");
+  try {
+    await saveResult(result);
+  } catch (error) {
+    toast(`Could not submit score: ${error.message}`);
+    return;
+  }
+  toast("Score submitted successfully");
   timer.reset();$("scoreSheetPanel").classList.add("hidden");$("runPanel").classList.add("hidden");
   selectedRound=null;document.querySelectorAll(".round-options button").forEach(item=>item.classList.remove("selected"));
   refreshHistory();
@@ -186,6 +211,7 @@ $("historyCategory").addEventListener("change",refreshHistory);$("historySearch"
 $("authDialog").addEventListener("close",()=>{});
 $("authButton").addEventListener("click",async()=>{
   if(auth&&auth.currentUser){await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js").then(m=>m.signOut(auth));return;}
+  if(!auth){toast("Configure Firebase before signing in.");return;}
   $("authDialog").showModal();
 });
 $("authCancel").addEventListener("click",()=>$("authDialog").close());

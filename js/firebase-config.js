@@ -1,5 +1,5 @@
-// Replace these placeholders with your Firebase web app configuration.
-// Without it, the app runs in local/shared-tab mode using localStorage.
+// Add your Firebase web app configuration here before deploying.
+// Firebase web configuration is public; Firestore rules protect your data.
 export const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "YOUR_PROJECT.firebaseapp.com",

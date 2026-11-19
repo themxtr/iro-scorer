@@ -6,8 +6,6 @@ let activeCategory = "Explorer";
 let teams = [];
 let results = [];
 let store = new LocalStore();
-let unsubscribe = null;
-
 const validConfig = firebaseConfig.projectId !== "YOUR_PROJECT_ID";
 
 async function init() {
@@ -31,7 +29,7 @@ async function init() {
 async function initFirestore() {
   try {
     const [
-      { initializeApp }, { getFirestore, collection, onSnapshot, query }
+      { initializeApp }, { getFirestore, collection, onSnapshot }
     ] = await Promise.all([
       import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js"),
       import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js")
@@ -41,14 +39,13 @@ async function initFirestore() {
     onSnapshot(collection(db, "teams"), snapshot => {
       teams = snapshot.docs.map(doc => ({id:doc.id,...doc.data()}));
       render();
-    });
+    }, reportFirebaseError);
     onSnapshot(collection(db, "results"), snapshot => {
       results = snapshot.docs.map(doc => ({id:doc.id,...doc.data()}));
       render();
-    });
+    }, reportFirebaseError);
   } catch (error) {
-    document.getElementById("connectionStatus").textContent = "Firestore unavailable";
-    initLocal();
+    document.getElementById("connectionStatus").textContent = `Firestore unavailable: ${error.message}`;
   }
 }
 function initLocal() {
@@ -58,6 +55,9 @@ function initLocal() {
     document.getElementById("connectionStatus").textContent = "Local mode";
     render();
   });
+}
+function reportFirebaseError(error) {
+  document.getElementById("connectionStatus").textContent = `Firestore error: ${error.message}`;
 }
 
 function secondsFor(result) {

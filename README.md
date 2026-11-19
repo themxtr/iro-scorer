@@ -1,59 +1,56 @@
 # ROBO-G Robotics Tournament Management System
 
-## Run locally
+The app is static HTML/CSS/JavaScript hosted on GitHub Pages. Firebase Firestore is the shared database and pushes team/result changes to both pages in real time. GitHub Pages hosts files only; it does not provide a shared database.
 
-From the project folder, start a local web server:
+## One-time setup
+
+### 1. Configure Firebase
+
+1. Create a Firebase project and register a Web app.
+2. Enable **Cloud Firestore** and **Authentication → Email/Password**.
+3. Create a Firestore database.
+4. Copy the Firebase Web app configuration into `js/firebase-config.js`.
+   The Firebase web config is visible in the browser by design. Never put a service-account key or Admin SDK credential in this repository.
+5. In Firebase Authentication → Settings → Authorized domains, add `themxtr.github.io`.
+6. Create an account for each scorer. Grant scorer access with a Firebase custom claim named `scorer` set to `true`; custom claims must be assigned using the Admin SDK in a trusted environment, never in browser code.
+7. Publish the contents of `firebase.rules` in Firestore → Rules.
+
+The rules allow the public leaderboard to read data, but only authenticated users with the `scorer` custom claim to change teams or submit results. Firestore rules—not hidden controls in the HTML—enforce access.
+
+### 2. Enable GitHub Pages
+
+1. Push the `main` branch to `https://github.com/themxtr/iro-scorer`.
+2. Open **Settings → Pages** for the repository.
+3. Set **Build and deployment → Source** to **GitHub Actions**.
+4. The included `.github/workflows/pages.yml` publishes the static files on each push to `main`. Check **Actions** for the deployment status.
+
+Once deployed, open:
+
+- Public results: `https://themxtr.github.io/iro-scorer/`
+- Scorer console: `https://themxtr.github.io/iro-scorer/scorer.html`
+
+### 3. Use it live
+
+1. Sign in on `scorer.html` using an authorized scorer account.
+2. Add teams, then submit their round scores.
+3. Open the public results URL on the projector/TV.
+4. The public page listens to Firestore snapshots and refreshes the standings automatically after each change.
+
+Both pages should show a Firebase/Firestore connection status. If the Firebase configuration is still the placeholder, the scorer explicitly runs in local demo mode; browser storage is not shared across devices. If Firebase is configured but cannot connect, the app shows the error instead of silently switching to local data.
+
+## Local preview
+
+Serve the project over HTTP (ES modules do not work from a `file://` URL):
 
 ```powershell
 python -m http.server 8000
 ```
 
-Open `http://localhost:8000/index.html` for the public leaderboard and `http://localhost:8000/scorer.html` for the scorer console.
+Then open `http://localhost:8000/` and `http://localhost:8000/scorer.html`. For shared multi-device testing, configure Firebase as above; local demo mode is only for one browser.
 
-When Firebase configuration placeholders are unchanged, the app runs in a local browser-storage mode. It is suitable for testing on one computer, but not for separate devices.
+## Firestore data
 
-## Configure Firebase
+- `teams`: `name`, `category`, `registeredAt`, `active`, optional `archivedAt`
+- `results`: `teamId`, `teamName`, `category`, `roundNumber`, `timeLimit`, `actualTimeTaken`, `taskBreakdown`, `totalScore`, `submissionTimestamp`
 
-1. Create a Firebase project.
-2. Enable Firestore Database and Firebase Authentication (Email/Password).
-3. Register a web app and copy its web configuration.
-4. Replace the placeholders in `js/firebase-config.js`.
-5. Create an authorized scorer user in Firebase Authentication.
-6. Add a custom user claim named `scorer` with the Boolean value `true`. Firebase Console custom claims require the Admin SDK or Firebase CLI. An example:
-
-```javascript
-const { getAuth } = require("firebase-admin/auth");
-await getAuth().setCustomUserClaims("SCORER_UID", { scorer: true });
-```
-
-7. Deploy `firebase.rules` to Firestore as `firestore.rules`, or paste its contents into Firebase Console → Firestore Database → Rules.
-8. Serve the files over HTTPS or localhost. Firebase modules require an HTTP(S) server; do not open them with `file://`.
-
-## Deploy
-
-For Firebase Hosting:
-
-```powershell
-npm install -g firebase-tools
-firebase login
-firebase init hosting firestore
-firebase deploy
-```
-
-Select this project directory as the public directory and set `index.html` as a normal static entry. Deploy security rules with `firebase deploy --only firestore:rules`.
-
-## Firestore collections
-
-- `teams`: `id`, `name`, `category`, `registeredAt`, `active`, and optional `archivedAt`
-- `results`: `id`, `teamId`, `teamName`, `category`, `roundNumber`, `timeLimit`, `actualTimeTaken`, `taskBreakdown`, `totalScore`, `submissionTimestamp`
-- `categories`: optional category metadata
-
-## Scorer workflow
-
-1. Sign in with an authorized scorer account.
-2. Add or manage teams in Manage Teams.
-3. Open Enter Scores and select category, team, and round.
-4. Start the timer, stop it at the end of the run, enter the score-sheet results, review, and submit.
-5. Replacing an existing round requires confirmation.
-
-The public leaderboard opens independently and listens to Firestore updates in real time. If Firebase is unavailable, the app uses local browser storage and cross-tab updates as a fallback.
+Round results are stored independently. Replacing an existing team/round result requires confirmation.

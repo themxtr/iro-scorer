@@ -16,7 +16,7 @@
       <button class="nav-item" data-view="scores" type="button">Enter Scores</button>
       <button class="nav-item" data-view="history" type="button">Submission History</button>
     </nav>
-    <div class="sidebar-status"><span class="live-dot"></span><span id="authStatus">Not signed in</span></div>
+    <div class="sidebar-status"><span class="live-dot"></span><span id="connectionStatus">Connecting…</span></div>
   </aside>
 
   <main class="scorer-main">
@@ -24,6 +24,7 @@
       <div><span class="eyebrow">SCORER CONSOLE</span><h1 id="viewTitle">Dashboard</h1></div>
       <div class="header-actions">
         <a class="icon-button" href="index.html" target="_blank" title="Open live leaderboard">LIVE ↗</a>
+        <span id="authStatus" class="auth-status">Not signed in</span>
         <button id="authButton" class="button secondary" type="button">Sign in</button>
       </div>
     </header>
