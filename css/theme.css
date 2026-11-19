@@ -1,0 +1,146 @@
+:root[data-theme="light"] {
+  --navy: #ffffff;
+  --navy2: #f2f2f2;
+  --panel: #ffffff;
+  --panel2: #f3f3f3;
+  --cyan: #333333;
+  --blue: #777777;
+  --gold: #111111;
+  --red: #b00020;
+  --text: #111111;
+  --muted: #555555;
+  --line: #bdbdbd;
+}
+
+.sidebar {
+  background: var(--navy2);
+}
+
+.scorer-body input,
+.scorer-body select {
+  background: var(--panel);
+  color: var(--text);
+}
+
+.theme-toggle {
+  min-height: 42px;
+  padding: 10px 13px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.theme-toggle:hover,
+.icon-button:hover {
+  background: var(--panel2);
+}
+
+.public-body {
+  background: var(--navy);
+  color: var(--text);
+}
+
+.public-body .public-header {
+  background: var(--navy);
+  border-bottom-color: var(--text);
+}
+
+.public-body .brand-mark {
+  background: var(--text);
+  color: var(--navy);
+}
+
+.public-body .eyebrow,
+.public-body .brand h1,
+.public-body .live-dot {
+  color: var(--text);
+  background-color: var(--text);
+}
+
+.public-body .brand h1,
+.public-body .eyebrow {
+  background: transparent;
+}
+
+.public-body .icon-button {
+  background: var(--panel);
+  color: var(--text);
+  border-color: var(--text);
+}
+
+.public-body .leaderboard-shell {
+  background: var(--panel);
+}
+
+.public-body .leaderboard-heading,
+.public-body .leaderboard-meta div {
+  border-color: var(--text);
+}
+
+.public-body .leaderboard-meta span,
+.public-body .leaderboard-footer,
+.public-body .leaderboard-footer strong {
+  color: var(--text);
+}
+
+.public-body th,
+.public-body td {
+  color: var(--text);
+  border-color: var(--line);
+}
+
+.public-body th {
+  background: var(--panel);
+  border-bottom-color: var(--text);
+}
+
+.public-body tbody tr:first-child td,
+.public-body tbody tr:first-child td:first-child {
+  background: var(--panel);
+  color: var(--text);
+}
+
+.public-body .rank-badge,
+.public-body .team-score {
+  background: transparent;
+  color: var(--text);
+}
+
+.public-body .current-team td {
+  background: var(--text) !important;
+  color: var(--navy) !important;
+}
+
+.public-body .current-team .team-score {
+  color: var(--navy);
+}
+
+.public-body .connection-status {
+  background: var(--panel);
+  color: var(--text);
+  border-color: var(--text);
+}
+
+.public-body .theme-toggle {
+  border-color: var(--text);
+}
+
+.public-body *,
+.theme-toggle {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+:root[data-theme="light"] .scorer-body .brand-mark {
+  background: #111111;
+  color: #ffffff;
+}
+
+:root[data-theme="light"] .button.primary {
+  color: #ffffff;
+}
+
+:root[data-theme="light"] .step-number {
+  color: #ffffff;
+}

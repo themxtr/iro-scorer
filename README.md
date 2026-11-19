@@ -38,6 +38,8 @@ Once deployed, open:
 
 Both pages should show a Firebase/Firestore connection status. If the Firebase configuration is still the placeholder, the scorer explicitly runs in local demo mode; browser storage is not shared across devices. If Firebase is configured but cannot connect, the app shows the error instead of silently switching to local data.
 
+The same light/dark toggle is available on both pages. The selected theme is saved in the browser and shared between the scorer and leaderboard on that device.
+
 ## Local preview
 
 Serve the project over HTTP (ES modules do not work from a `file://` URL):

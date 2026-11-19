@@ -2,6 +2,7 @@ import { firebaseConfig } from "./firebase-config.js";
 import { LocalStore } from "./team-management.js";
 import { CATEGORIES, createScoreSheet } from "./scoring.js";
 import { RunTimer } from "./timer.js";
+import { initThemeToggle } from "./theme.js";
 
 const validConfig = firebaseConfig.projectId !== "YOUR_PROJECT_ID";
 let db, auth, Firestore, localStore = new LocalStore();
@@ -9,6 +10,7 @@ let teams = [], results = [], selectedCategory = null, selectedTeam = null, sele
 
 const $ = id => document.getElementById(id);
 const categories = ["Explorer","Innovator","Techies"];
+initThemeToggle();
 
 async function initFirebase() {
   if (!validConfig) { initLocal(); return; }

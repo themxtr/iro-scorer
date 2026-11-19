@@ -1,5 +1,6 @@
 import { firebaseConfig } from "./firebase-config.js";
 import { LocalStore } from "./team-management.js";
+import { initThemeToggle } from "./theme.js";
 
 const categories = ["Explorer", "Innovator", "Techies"];
 let activeCategory = "Explorer";
@@ -10,6 +11,7 @@ let results = [];
 let store = new LocalStore();
 const validConfig = firebaseConfig.projectId !== "YOUR_PROJECT_ID";
 const rotationIntervalMs = 3000;
+initThemeToggle();
 
 async function init() {
   if (validConfig) await initFirestore(); else initLocal();
