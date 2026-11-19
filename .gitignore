@@ -10,6 +10,8 @@ serviceAccount*.json
 service-account*.json
 **/*credentials*.json
 **/*secret*.json
+# Prevent future additions of this local client config; it is currently tracked.
+js/firebase-config.js
 
 # Private keys and signing material
 *.pem
