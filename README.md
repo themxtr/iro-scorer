@@ -12,7 +12,7 @@ The app is static HTML/CSS/JavaScript hosted on GitHub Pages. Firebase Firestore
 4. Copy the Firebase Web app configuration into `js/firebase-config.js`.
    The Firebase web config is visible in the browser by design. Never put a service-account key or Admin SDK credential in this repository.
 5. In Firebase Authentication → Settings → Authorized domains, add `themxtr.github.io`.
-6. Add `robogbangalore@gmail.com` as a user in Firebase Authentication and verify the email. Firestore rules authorize only this verified email to make scorer changes.
+6. Add `scorer@iro2026.in` as a user in Firebase Authentication and verify the email. The scorer UI and Firestore rules authorize only this verified email to sign in and make changes.
 7. Publish the rules with `firebase deploy --only firestore:rules --project iro2026`, or paste the contents of `firebase.rules` in Firestore → Rules. The included `firebase.json` maps the rules file for Firebase CLI deployment.
 
 The rules allow the public leaderboard to read data, but only the authenticated, verified scorer email above can change teams or submit results. Firestore rules—not hidden controls in the HTML—enforce access.

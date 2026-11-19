@@ -5,6 +5,7 @@ import { RunTimer } from "./timer.js";
 import { initThemeToggle } from "./theme.js";
 
 const validConfig = firebaseConfig.projectId !== "YOUR_PROJECT_ID";
+const allowedScorerEmail = "scorer@iro2026.in";
 let db, auth, Firestore, localStore = new LocalStore();
 let teams = [], results = [], selectedCategory = null, selectedTeam = null, selectedRound = null, sheetApi = null, currentTotal = 0, firestoreReady = false, localMode = false;
 
@@ -28,7 +29,16 @@ async function initFirebase() {
     Firestore = firestoreModule;
     firestoreReady = true;
     $("connectionStatus").textContent = "Firebase connected · live";
-    authModule.onAuthStateChanged(auth, user => updateAuth(user));
+    authModule.onAuthStateChanged(auth, user => {
+      if (user && !isAuthorizedScorer(user)) {
+        $("authStatus").textContent = "Unauthorized account";
+        $("authButton").textContent = "Sign in";
+        toast(`Only verified ${allowedScorerEmail} can score.`);
+        authModule.signOut(auth).catch(error => toast(`Could not sign out: ${error.message}`));
+        return;
+      }
+      updateAuth(user);
+    });
     firestoreModule.onSnapshot(firestoreModule.collection(db,"teams"), snap => { teams=snap.docs.map(d=>({id:d.id,...d.data()})); refreshAll(); }, reportFirebaseError);
     firestoreModule.onSnapshot(firestoreModule.collection(db,"results"), snap => { results=snap.docs.map(d=>({id:d.id,...d.data()})); refreshAll(); }, reportFirebaseError);
   } catch (error) {
@@ -54,14 +64,20 @@ function updateAuth(user) {
   $("authButton").textContent = user ? "Sign out" : "Sign in";
 }
 
+function isAuthorizedScorer(user) {
+  return user?.email?.toLowerCase() === allowedScorerEmail && user.emailVerified;
+}
+
 async function saveTeam(team) {
   if (localMode) return localStore.saveTeam(team);
   if (!firestoreReady) throw new Error("Firebase is not connected. Team changes were not saved.");
+  if (!isAuthorizedScorer(auth?.currentUser)) throw new Error(`Sign in with verified ${allowedScorerEmail} to manage teams.`);
   await Firestore.setDoc(Firestore.doc(db,"teams",team.id),team);
 }
 async function saveResult(result) {
   if (localMode) return localStore.saveResult(result);
   if (!firestoreReady) throw new Error("Firebase is not connected. The score was not saved.");
+  if (!isAuthorizedScorer(auth?.currentUser)) throw new Error(`Sign in with verified ${allowedScorerEmail} to submit scores.`);
   await Firestore.setDoc(Firestore.doc(db,"results",result.id),result);
 }
 
@@ -221,7 +237,14 @@ $("authForm").addEventListener("submit",async event=>{
   event.preventDefault();
   try{
     const {signInWithEmailAndPassword}=await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js");
-    await signInWithEmailAndPassword(auth,$("authEmail").value,$("authPassword").value);$("authDialog").close();
+    const credential=await signInWithEmailAndPassword(auth,$("authEmail").value,$("authPassword").value);
+    if(!isAuthorizedScorer(credential.user)){
+      const {signOut}=await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js");
+      await signOut(auth);
+      $("authError").textContent=`Only verified ${allowedScorerEmail} is authorized to score.`;
+      return;
+    }
+    $("authDialog").close();
   }catch(error){$("authError").textContent=error.message;}
 });
 
