@@ -3,23 +3,21 @@ import { LocalStore } from "./team-management.js";
 
 const categories = ["Explorer", "Innovator", "Techies"];
 let activeCategory = "Explorer";
+let categoryIndex = 0;
+let teamRowIndex = 0;
 let teams = [];
 let results = [];
 let store = new LocalStore();
 const validConfig = firebaseConfig.projectId !== "YOUR_PROJECT_ID";
+const rotationIntervalMs = 3000;
 
 async function init() {
   if (validConfig) await initFirestore(); else initLocal();
-  document.querySelectorAll(".category-tab").forEach(button => button.addEventListener("click", () => {
-    document.querySelectorAll(".category-tab").forEach(item => item.classList.remove("active"));
-    button.classList.add("active");
-    activeCategory = button.dataset.category;
-    render();
-  }));
   document.getElementById("fullscreenBtn").addEventListener("click", () => {
     if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
     else document.exitFullscreen?.();
   });
+  window.setInterval(advanceRotation, rotationIntervalMs);
   setInterval(() => {
     document.getElementById("liveClock").textContent = new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
   }, 1000);
@@ -89,7 +87,7 @@ function render() {
   document.getElementById("pendingCount").textContent = categoryTeams.length - participated;
   document.getElementById("leaderName").textContent = rows.find(row => row.best)?.team.name || "—";
   document.getElementById("leaderboardBody").innerHTML = rows.length ? rows.map((row,index) => `
-    <tr>
+    <tr data-team-row="${index}" class="${index === teamRowIndex ? "current-team" : ""}">
       <td><span class="rank-badge">${index+1}</span></td>
       <td><strong>${escapeHtml(row.team.name)}</strong></td>
       <td>${row.r1 ? `<span class="team-score">${row.r1.totalScore}</span>` : "—"}</td>
@@ -99,6 +97,21 @@ function render() {
       <td>${row.best ? `<span class="team-score">${row.best.totalScore}</span>` : "—"}</td>
     </tr>`).join("") : `<tr><td colspan="7" class="muted" style="text-align:center;padding:40px">No registered teams</td></tr>`;
   document.getElementById("lastUpdated").textContent = new Date().toLocaleString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
+}
+function advanceRotation() {
+  const rows = document.querySelectorAll("#leaderboardBody tr[data-team-row]");
+  if (teamRowIndex + 1 < rows.length) {
+    rows[teamRowIndex].classList.remove("current-team");
+    teamRowIndex++;
+    rows[teamRowIndex].classList.add("current-team");
+    rows[teamRowIndex].scrollIntoView({behavior:"smooth",block:"center"});
+    return;
+  }
+  categoryIndex = (categoryIndex + 1) % categories.length;
+  activeCategory = categories[categoryIndex];
+  teamRowIndex = 0;
+  document.getElementById("leaderboardWrap").scrollTop = 0;
+  render();
 }
 function formatTime(seconds) { return `${String(Math.floor(seconds/60)).padStart(2,"0")}:${String(seconds%60).padStart(2,"0")}`; }
 function escapeHtml(value) { const div=document.createElement("div"); div.textContent=value||""; return div.innerHTML; }

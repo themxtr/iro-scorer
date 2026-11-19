@@ -34,7 +34,7 @@ Once deployed, open:
 1. Sign in on `scorer.html` using an authorized scorer account.
 2. Add teams, then submit their round scores.
 3. Open the public results URL on the projector/TV.
-4. The public page listens to Firestore snapshots and refreshes the standings automatically after each change.
+4. The public page listens to Firestore snapshots and refreshes the standings automatically after each change. It cycles through Explorer, Innovator, and Techies, advancing through team rows every three seconds and repeating continuously.
 
 Both pages should show a Firebase/Firestore connection status. If the Firebase configuration is still the placeholder, the scorer explicitly runs in local demo mode; browser storage is not shared across devices. If Firebase is configured but cannot connect, the app shows the error instead of silently switching to local data.
 
