@@ -3,7 +3,8 @@ service cloud.firestore {
   match /databases/{database}/documents {
     function isScorer() {
       return request.auth != null
-        && request.auth.token.scorer == true;
+        && request.auth.token.email == "robogbangalore@gmail.com"
+        && request.auth.token.email_verified == true;
     }
 
     match /teams/{teamId} {
