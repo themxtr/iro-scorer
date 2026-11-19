@@ -15,7 +15,7 @@ The mobile-friendly scorer and live results pages are static HTML/CSS/JavaScript
 6. Firebase Authentication creates the Google user automatically at first sign-in. The scorer UI and Firestore rules authorize only the verified `robogbangalore@gmail.com` account.
 7. Publish the rules with `firebase deploy --only firestore:rules --project iro2026`, or paste the contents of `firebase.rules` in Firestore → Rules. The included `firebase.json` maps the rules file for Firebase CLI deployment.
 
-The rules allow the public leaderboard to read data, but only the authenticated, verified scorer email above can change teams or submit results. Other Google accounts are signed out and shown “No entry.” Firestore rules—not hidden controls in the HTML—enforce access.
+The rules allow the public leaderboard to read data, but only the authenticated, verified scorer email above can change teams or create, update, or delete results. Other Google accounts are signed out and shown “No entry.” The rules—not hidden controls in the HTML—enforce access.
 
 ### 2. Enable GitHub Pages
 
@@ -35,6 +35,8 @@ Once deployed, open:
 2. Add teams, select the Explorer task being scored, enter its criteria (including per-item counts), then submit the round score.
 3. Open the public results URL on the projector/TV.
 4. The public page listens to Firestore snapshots and refreshes the standings automatically after each change. It cycles through Explorer, Innovator, and Techies, advancing through team rows every three seconds and repeating continuously.
+
+Deleting a team also deletes its saved scores. In Submission History, **Clear score** lets the scorer remove only the selected round or both rounds for that team.
 
 Both pages show a live-update connection status. If the Firebase configuration is still the placeholder, the scorer explicitly runs in local demo mode; browser storage is not shared across devices. If Firebase is configured but cannot connect, the app reports that live data is unavailable instead of silently switching to local data.
 

@@ -27,6 +27,28 @@
   text-align: right;
 }
 
+.history-row {
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, .7fr) minmax(0, .5fr) minmax(0, .7fr) minmax(0, 1.3fr) auto;
+  align-items: start;
+  overflow-wrap: anywhere;
+}
+
+.history-actions {
+  display: flex;
+  align-items: center;
+}
+
+.clear-score-dialog {
+  width: min(520px, 92vw);
+}
+
+.clear-score-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 @media (max-width: 760px) {
   .public-body .public-header {
     height: auto;
@@ -247,6 +269,29 @@
     gap: 6px;
     overflow-wrap: anywhere;
     font-size: .82rem;
+  }
+
+  .scorer-body .history-actions {
+    grid-column: 1 / -1;
+  }
+
+  .scorer-body .clear-score-actions .button {
+    flex: 1 1 140px;
+  }
+
+  .scorer-body .team-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .scorer-body .team-row > span {
+    flex: 1 1 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .scorer-body .team-row > div {
+    width: 100%;
+    justify-content: flex-end;
   }
 
   .scorer-body .timer {

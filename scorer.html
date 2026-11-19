@@ -134,6 +134,18 @@
       </div>
     </div>
   </dialog>
+  <dialog id="clearScoreDialog" class="clear-score-dialog">
+    <div>
+      <h2>Clear score</h2>
+      <p id="clearScorePrompt" class="muted"></p>
+      <p class="muted">This action cannot be undone.</p>
+      <div class="clear-score-actions">
+        <button class="button secondary" type="button" id="cancelClearScore">Cancel</button>
+        <button class="button danger" type="button" id="clearThisRound">Clear this round</button>
+        <button class="button danger" type="button" id="clearBothRounds">Clear both rounds</button>
+      </div>
+    </div>
+  </dialog>
   <div id="toast" class="toast"></div>
   <script type="module" src="js/scorer.js"></script>
 </body>

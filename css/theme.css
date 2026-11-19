@@ -168,3 +168,18 @@
 .organizer-footer strong {
   color: var(--text);
 }
+
+.toast {
+  background: var(--panel2);
+  color: var(--text);
+  border-color: var(--cyan);
+}
+
+.error {
+  color: var(--red);
+}
+
+.small-button.danger {
+  border-color: var(--red);
+  color: var(--red);
+}

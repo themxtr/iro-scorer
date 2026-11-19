@@ -7,7 +7,7 @@ import { initThemeToggle } from "./theme.js";
 const validConfig = firebaseConfig.projectId !== "YOUR_PROJECT_ID";
 const allowedScorerEmail = "robogbangalore@gmail.com";
 let db, auth, Firestore, GoogleAuthProvider, signInWithPopup, signOut, localStore = new LocalStore();
-let teams = [], results = [], selectedCategory = null, selectedTeam = null, selectedRound = null, sheetApi = null, currentTotal = 0, firestoreReady = false, localMode = false;
+let teams = [], results = [], selectedCategory = null, selectedTeam = null, selectedRound = null, pendingClearScore = null, sheetApi = null, currentTotal = 0, firestoreReady = false, localMode = false;
 
 const $ = id => document.getElementById(id);
 const categories = ["Explorer","Innovator","Techies"];
@@ -85,6 +85,43 @@ async function saveResult(result) {
   await Firestore.setDoc(Firestore.doc(db,"results",result.id),result);
 }
 
+function requireScorerAccess() {
+  if (!firestoreReady) throw new Error("Live data is unavailable. Nothing was changed.");
+  if (!isAuthorizedScorer(auth?.currentUser)) throw new Error(`Sign in with verified ${allowedScorerEmail} to manage scores and teams.`);
+}
+
+async function getTeamScoreDocs(teamId) {
+  const snapshot = await Firestore.getDocs(Firestore.query(
+    Firestore.collection(db,"results"),
+    Firestore.where("teamId","==",teamId)
+  ));
+  return snapshot.docs;
+}
+
+async function clearTeamScores(teamId, roundNumber = null) {
+  if (localMode) return localStore.clearScores(teamId, roundNumber);
+  requireScorerAccess();
+  const scoreDocs = await getTeamScoreDocs(teamId);
+  const docsToDelete = scoreDocs.filter(doc =>
+    roundNumber === null || Number(doc.data().roundNumber) === Number(roundNumber));
+  if (!docsToDelete.length) return 0;
+  const batch = Firestore.writeBatch(db);
+  docsToDelete.forEach(doc => batch.delete(doc.ref));
+  await batch.commit();
+  return docsToDelete.length;
+}
+
+async function deleteTeam(teamId) {
+  if (localMode) return localStore.deleteTeam(teamId);
+  requireScorerAccess();
+  const scoreDocs = await getTeamScoreDocs(teamId);
+  const batch = Firestore.writeBatch(db);
+  scoreDocs.forEach(doc => batch.delete(doc.ref));
+  batch.delete(Firestore.doc(db,"teams",teamId));
+  await batch.commit();
+  return scoreDocs.length;
+}
+
 function reportFirebaseError(error) {
   $("connectionStatus").textContent = "Live updates unavailable";
   toast("Live data is unavailable. Refresh the page or contact an organizer.");
@@ -135,7 +172,8 @@ function renderTeams(){
     return `<div class="team-column"><h3>${category} (${list.length})</h3>${list.map(team=>`
       <div class="team-row"><span>${escapeHtml(team.name)}</span><div>
       <button class="small-button" type="button" data-edit="${team.id}">Edit</button>
-      <button class="small-button" type="button" data-archive="${team.id}">Archive</button></div></div>`).join("")||'<div class="team-row muted">No teams</div>'}</div>`;
+      <button class="small-button" type="button" data-archive="${team.id}">Archive</button>
+      <button class="small-button danger" type="button" data-delete-team="${team.id}" aria-label="Delete team">Delete</button></div></div>`).join("")||'<div class="team-row muted">No teams</div>'}</div>`;
   }).join("");
   document.querySelectorAll("[data-edit]").forEach(button=>button.addEventListener("click",()=>{
     const team=teams.find(item=>item.id===button.dataset.edit); if(!team)return;
@@ -152,6 +190,24 @@ function renderTeams(){
       toast(error.code === "permission-denied"
         ? "No permission to archive this team. Sign in with the authorized scorer account."
         : "Could not archive team. Please try again.");
+    }
+  }));
+  document.querySelectorAll("[data-delete-team]").forEach(button=>button.addEventListener("click",async()=>{
+    const team=teams.find(item=>item.id===button.dataset.deleteTeam); if(!team)return;
+    if(!confirm(`Delete "${team.name}" and all saved scores for this team? This cannot be undone.`))return;
+    try {
+      await deleteTeam(team.id);
+      if(selectedTeam?.id===team.id){
+        timer.reset();selectedTeam=null;selectedRound=null;sheetApi=null;currentTotal=0;
+        $("runPanel").classList.add("hidden");$("scoreSheetPanel").classList.add("hidden");
+        document.querySelectorAll(".round-options button").forEach(item=>item.classList.remove("selected"));
+        renderTeamPicker();
+      }
+      toast("Team and its scores deleted");
+    } catch (error) {
+      toast(error.code === "permission-denied"
+        ? "No permission to delete this team."
+        : "Could not delete team and scores. Please try again.");
     }
   }));
 }
@@ -236,9 +292,33 @@ $("scoreSheet").addEventListener("submit",async event=>{
 function refreshHistory(){
   const category=$("historyCategory").value;const search=$("historySearch").value.trim().toLowerCase();
   const list=[...results].filter(result=>(!category||result.category===category)&&(result.teamName||"").toLowerCase().includes(search)).sort((a,b)=>new Date(b.submissionTimestamp)-new Date(a.submissionTimestamp));
-  $("historyList").innerHTML=list.length?list.map(result=>`<div class="history-row"><strong>${escapeHtml(result.teamName)}</strong><span>${result.category}</span><span>Round ${result.roundNumber}</span><strong>${result.totalScore} pts</strong><span>${formatTime(Number(result.actualTimeTaken||0))} · ${new Date(result.submissionTimestamp).toLocaleString()}</span></div>`).join(""):'<div class="muted" style="padding:24px">No submissions</div>';
+  $("historyList").innerHTML=list.length?list.map(result=>`<div class="history-row"><strong>${escapeHtml(result.teamName)}</strong><span>${escapeHtml(result.category)}</span><span>Round ${result.roundNumber}</span><strong>${result.totalScore} pts</strong><span>${formatTime(Number(result.actualTimeTaken||0))} · ${new Date(result.submissionTimestamp).toLocaleString()}</span><span class="history-actions"><button class="small-button danger" type="button" data-clear-score="${result.id}" aria-label="Clear score">Clear score</button></span></div>`).join(""):'<div class="muted" style="padding:24px">No submissions</div>';
+  document.querySelectorAll("[data-clear-score]").forEach(button=>button.addEventListener("click",()=>{
+    const result=results.find(item=>item.id===button.dataset.clearScore); if(!result)return;
+    pendingClearScore=result;
+    $("clearScorePrompt").textContent=`Clear ${result.teamName} — Round ${result.roundNumber} only, or all saved scores for this team?`;
+    $("clearScoreDialog").showModal();
+  }));
 }
 $("historyCategory").addEventListener("change",refreshHistory);$("historySearch").addEventListener("input",refreshHistory);
+$("cancelClearScore").addEventListener("click",()=>$("clearScoreDialog").close());
+$("clearScoreDialog").addEventListener("close",()=>{pendingClearScore=null;});
+$("clearThisRound").addEventListener("click",()=>clearPendingScore(false));
+$("clearBothRounds").addEventListener("click",()=>clearPendingScore(true));
+
+async function clearPendingScore(clearBothRounds){
+  if(!pendingClearScore)return;
+  const target=pendingClearScore;
+  try {
+    const cleared=await clearTeamScores(target.teamId,clearBothRounds?null:Number(target.roundNumber));
+    $("clearScoreDialog").close();
+    toast(cleared?`${cleared} score${cleared===1?"":"s"} cleared`:"No matching scores found.");
+  } catch (error) {
+    toast(error.code === "permission-denied"
+      ? "No permission to clear scores."
+      : "Could not clear scores. Please try again.");
+  }
+}
 
 $("authDialog").addEventListener("close",()=>{});
 $("authButton").addEventListener("click",async()=>{
