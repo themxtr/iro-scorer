@@ -19,12 +19,15 @@ const rotationIntervalMs = 3000;
 initThemeToggle();
 
 async function init() {
-  if (validConfig) await initFirestore(); else initLocal();
   document.getElementById("fullscreenBtn").addEventListener("click", () => {
     if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
     else document.exitFullscreen?.();
   });
+  document.querySelectorAll("[data-leaderboard-category]").forEach(button => {
+    button.addEventListener("click", () => setActiveCategory(button.dataset.leaderboardCategory));
+  });
   window.setInterval(advanceRotation, rotationIntervalMs);
+  if (validConfig) await initFirestore(); else initLocal();
 }
 
 async function initFirestore() {
@@ -67,6 +70,11 @@ function millisecondsFor(result) {
 function render() {
   const category = categoryDetails[activeCategory];
   document.getElementById("leaderboardTitle").textContent = `${category.label} Leaderboard`;
+  document.querySelectorAll("[data-leaderboard-category]").forEach(button => {
+    const isActive = button.dataset.leaderboardCategory === activeCategory;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
   const categoryTeams = teams.filter(team => team.category === activeCategory && team.active !== false);
   const rows = categoryTeams.map(team => {
     const teamResults = results.filter(result => result.teamId === team.id && result.category === activeCategory);
@@ -108,7 +116,7 @@ function advanceRotation() {
     rows[teamRowIndex].classList.remove("current-team");
     teamRowIndex++;
     rows[teamRowIndex].classList.add("current-team");
-    rows[teamRowIndex].scrollIntoView({behavior:"smooth",block:"center"});
+    keepRowVisible(document.getElementById("leaderboardWrap"), rows[teamRowIndex]);
     return;
   }
   categoryIndex = (categoryIndex + 1) % categories.length;
@@ -116,6 +124,24 @@ function advanceRotation() {
   teamRowIndex = 0;
   document.getElementById("leaderboardWrap").scrollTop = 0;
   render();
+}
+function setActiveCategory(category) {
+  const nextIndex = categories.indexOf(category);
+  if (nextIndex === -1) return;
+  categoryIndex = nextIndex;
+  activeCategory = category;
+  teamRowIndex = 0;
+  document.getElementById("leaderboardWrap").scrollTop = 0;
+  render();
+}
+function keepRowVisible(wrapper, row) {
+  const wrapperRect = wrapper.getBoundingClientRect();
+  const rowRect = row.getBoundingClientRect();
+  if (rowRect.top < wrapperRect.top) {
+    wrapper.scrollTop -= wrapperRect.top - rowRect.top;
+  } else if (rowRect.bottom > wrapperRect.bottom) {
+    wrapper.scrollTop += rowRect.bottom - wrapperRect.bottom;
+  }
 }
 function formatTime(milliseconds) {
   const minutes=Math.floor(milliseconds/60000);

@@ -91,7 +91,41 @@ body {
 }
 
 .public-body .leaderboard-wrap {
+  max-height: min(65vh, 640px);
+  overflow: auto;
   border-bottom-color: var(--line);
+}
+
+.public-body .category-switcher {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--public-border);
+  background: var(--public-panel);
+}
+
+.public-body .category-switcher button {
+  padding: 7px 10px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--public-muted);
+  font: inherit;
+  font-size: .88rem;
+  cursor: pointer;
+}
+
+.public-body .category-switcher button.active {
+  border-bottom-color: var(--public-text);
+  color: var(--public-text);
+  font-weight: 700;
+}
+
+.public-body thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .public-body .rank-badge {
@@ -670,6 +704,8 @@ body {
 }
 
 :root:fullscreen .leaderboard-shell {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100vh;
   margin: 0;
@@ -679,8 +715,9 @@ body {
 }
 
 :root:fullscreen #leaderboardWrap {
+  flex: 1 1 auto;
   width: 100%;
-  height: 100vh;
+  height: auto;
   max-height: none !important;
   min-height: 0 !important;
   overflow: auto;
@@ -710,8 +747,13 @@ body {
     max-height: 80px;
   }
 
+  .public-body .category-switcher {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
   :root:fullscreen #leaderboardWrap {
-    height: 100vh;
+    height: auto;
   }
 }
 
