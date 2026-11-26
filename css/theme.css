@@ -555,3 +555,125 @@ body {
     padding: 8px 12px;
   }
 }
+
+.public-body .public-header {
+  position: relative;
+  justify-content: center;
+  height: auto;
+  min-height: 142px;
+  padding: 16px 3vw;
+}
+
+.public-body .brand {
+  flex-direction: column;
+  gap: 8px;
+  text-align: center;
+}
+
+.public-body .brand-logo {
+  width: 76px;
+  height: 76px;
+  filter: none;
+}
+
+.public-body .brand h1 {
+  margin: 0;
+  font-size: clamp(1.35rem, 3vw, 2rem);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.public-body .header-actions {
+  position: absolute;
+  top: 50%;
+  right: 3vw;
+  transform: translateY(-50%);
+}
+
+.public-body .iro-intro {
+  max-width: 1100px;
+  margin: 8px auto 20px;
+  padding: 0 16px;
+  color: var(--public-text);
+  text-align: center;
+}
+
+.public-body .iro-intro p {
+  margin: 6px 0;
+}
+
+.public-body .iro-tagline {
+  font-weight: 700;
+}
+
+.public-body .iro-categories {
+  color: var(--public-muted);
+  font-size: .9rem;
+}
+
+.public-body .leaderboard-shell,
+.public-body .rank-badge,
+.public-body .theme-toggle,
+.public-body .icon-button,
+.public-body .connection-status,
+.public-body .live-dot {
+  border-radius: 0 !important;
+}
+
+:root:fullscreen .public-header,
+:root:fullscreen .iro-intro,
+:root:fullscreen .leaderboard-heading,
+:root:fullscreen .leaderboard-footer,
+:root:fullscreen .organizer-footer,
+:root:fullscreen .connection-status {
+  display: none !important;
+}
+
+:root:fullscreen body.public-body {
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+:root:fullscreen .public-main {
+  width: 100%;
+  max-width: none;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+:root:fullscreen .leaderboard-shell {
+  width: 100%;
+  height: 100vh;
+  margin: 0;
+  border: 0;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+:root:fullscreen #leaderboardWrap {
+  width: 100%;
+  height: 100vh;
+  max-height: none !important;
+  min-height: 0 !important;
+  overflow: auto;
+  border: 0;
+}
+
+@media (max-width: 760px) {
+  .public-body .public-header {
+    padding: 14px 12px 66px;
+  }
+
+  .public-body .header-actions {
+    top: auto;
+    right: 50%;
+    bottom: 10px;
+    transform: translateX(50%);
+  }
+
+  :root:fullscreen #leaderboardWrap {
+    height: 100vh;
+  }
+}

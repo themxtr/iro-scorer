@@ -25,10 +25,6 @@ async function init() {
     else document.exitFullscreen?.();
   });
   window.setInterval(advanceRotation, rotationIntervalMs);
-  setInterval(() => {
-    document.getElementById("liveClock").textContent = new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
-  }, 1000);
-  document.getElementById("liveClock").textContent = new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
 }
 
 async function initFirestore() {
