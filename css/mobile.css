@@ -51,10 +51,11 @@
 
 @media (max-width: 760px) {
   .public-body .public-header {
+    flex-direction: column;
     height: auto;
-    min-height: 64px;
-    padding: 8px 12px;
-    gap: 8px;
+    min-height: 0;
+    padding: 14px 12px;
+    gap: 12px;
   }
 
   .public-body .brand {
@@ -76,6 +77,8 @@
 
   .public-body .header-actions {
     gap: 6px;
+    position: static;
+    transform: none;
   }
 
   .public-body .theme-toggle,
@@ -310,6 +313,20 @@
 
   .organizer-footer {
     padding: 14px 12px;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1024px) {
+  .public-body .public-header {
+    flex-direction: column;
+    min-height: 0;
+    padding: 16px 12px;
+    gap: 12px;
+  }
+
+  .public-body .header-actions {
+    position: static;
+    transform: none;
   }
 }
 
