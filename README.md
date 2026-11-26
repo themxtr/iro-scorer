@@ -32,9 +32,10 @@ Once deployed, open:
 ### 3. Use it live
 
 1. Sign in on `scorer.html` using an authorized scorer account.
-2. Add teams, select the Explorer task being scored, enter its criteria (including per-item counts), then submit the round score.
-3. Open the public results URL on the projector/TV.
-4. The public page listens to Firestore snapshots and refreshes the standings automatically after each change. It cycles through Explorer, Innovator, and Techies, advancing through team rows every three seconds and repeating continuously.
+2. Add teams to Explorers (ages 5–7), Innovators (ages 7–10), or Techies (ages 10–15).
+3. Select a team and round, enter the score criteria, then enter the run time as `MM:SS:MMM` (minutes, seconds, milliseconds) and update the score.
+4. Open the public results URL on the projector/TV.
+5. The public page listens to Firestore snapshots and refreshes the standings automatically after each change. It cycles through Explorers, Innovators, and Techies, advancing through team rows every three seconds and repeating continuously.
 
 Deleting a team also deletes its saved scores. In Submission History, **Clear score** lets the scorer remove only the selected round or both rounds for that team.
 
@@ -55,6 +56,6 @@ Then open `http://localhost:8000/` and `http://localhost:8000/scorer.html`. For 
 ## Firestore data
 
 - `teams`: `name`, `category`, `registeredAt`, `active`, optional `archivedAt`
-- `results`: `teamId`, `teamName`, `category`, `roundNumber`, `timeLimit`, `actualTimeTaken`, `taskBreakdown`, `totalScore`, `submissionTimestamp`
+- `results`: `teamId`, `teamName`, `category`, `roundNumber`, `actualTimeTaken` (seconds, retained for older clients), `actualTimeMilliseconds`, `taskBreakdown`, `totalScore`, `submissionTimestamp`
 
 Round results are stored independently. Replacing an existing team/round result requires confirmation.

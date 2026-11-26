@@ -1,7 +1,7 @@
 export const CATEGORIES = {
-  Explorer: { max: 100, seconds: 600, timeLimit: "10 minutes" },
-  Innovator: { max: 100, seconds: 180, timeLimit: "3 minutes" },
-  Techies: { max: 150, seconds: 150, timeLimit: "2 minutes 30 seconds" }
+  Explorer: { max: 100, label: "Explorers", ages: "5–7" },
+  Innovator: { max: 100, label: "Innovators", ages: "7–10" },
+  Techies: { max: 150, label: "Techies", ages: "10–15" }
 };
 
 export function createScoreSheet(category, container, totalCallback, maximumCallback = () => {}) {
@@ -92,6 +92,29 @@ function renderTasks(entries, fields, calculate) {
         calculate();
       });
       box.appendChild(label);
+    } else if (task.eachItem) {
+      task.eachItem.forEach((item, index) => {
+        const itemOptions = document.createElement("div");
+        itemOptions.className = "score-item-options";
+        const itemTitle = document.createElement("strong");
+        itemTitle.textContent = item;
+        const options = document.createElement("div");
+        options.className = "score-options";
+        task.options.forEach((option, optionIndex) => {
+          const label = document.createElement("label");
+          label.className = "score-option";
+          const input = document.createElement("input");
+          input.type = "radio";
+          input.name = itemInputName(task, index);
+          input.value = String(option.value);
+          input.checked = optionIndex === 0;
+          input.addEventListener("change", calculate);
+          label.append(input, ` ${option.label} (${option.value})`);
+          options.appendChild(label);
+        });
+        itemOptions.append(itemTitle, options);
+        box.appendChild(itemOptions);
+      });
     } else {
       const options = document.createElement("div");
       options.className = "score-options";
@@ -120,6 +143,12 @@ function calculateScore(entries, container) {
       const counter = container.querySelector(`[data-score-count="${task.key}"]`);
       return total + countForTask(task, counter?.value) * task.each;
     }
+    if (task.eachItem) {
+      return total + task.eachItem.reduce((itemTotal, _, index) => {
+        const checked = container.querySelector(`input[name="${itemInputName(task, index)}"]:checked`);
+        return itemTotal + Number(checked?.value || 0);
+      }, 0);
+    }
     const checked = container.querySelector(`input[name="${task.key}"]:checked`);
     return total + Number(checked?.value || 0);
   }, 0);
@@ -133,7 +162,9 @@ function countForTask(task, value) {
 
 function maximumForTask(task) {
   return task.entries.reduce((total, entry) =>
-    total + (entry.each ? entry.maxPoints : Math.max(...entry.options.map(option => option.value))), 0);
+    total + (entry.each ? entry.maxPoints
+      : entry.eachItem ? entry.eachItem.length * Math.max(...entry.options.map(option => option.value))
+      : Math.max(...entry.options.map(option => option.value))), 0);
 }
 
 function getBreakdown(entries, container) {
@@ -144,9 +175,20 @@ function getBreakdown(entries, container) {
       const value = count * task.each;
       return [task.key, { label: task.name, value, count, each: task.each, option: `${count} × ${task.each}` }];
     }
+    if (task.eachItem) {
+      const items = task.eachItem.map((label, index) => {
+        const checked = container.querySelector(`input[name="${itemInputName(task, index)}"]:checked`);
+        return { label, value: Number(checked?.value || 0), option: checked?.parentElement.textContent.trim() || "0" };
+      });
+      return [task.key, { label: task.name, value: items.reduce((total, item) => total + item.value, 0), items }];
+    }
     const checked = container.querySelector(`input[name="${task.key}"]:checked`);
     return [task.key, { label: task.name, value: Number(checked?.value || 0), option: checked?.parentElement.textContent.trim() || "0" }];
   }));
+}
+
+function itemInputName(task, index) {
+  return `${task.key}-${index}`;
 }
 
 const explorerTasks = [
@@ -194,20 +236,20 @@ function innovatorTasks() {
     {key:"wallMoved",name:"Wall in maintenance zone not moved",options:[{label:"Moved",value:0},{label:"Not moved",value:10}]},
     {key:"barrier",name:"Crowd control barrier",options:[{label:"Outside",value:0},{label:"Partial",value:5},{label:"Complete",value:10}]},
     {key:"fireExit",name:"Fire exit gate removed",options:[{label:"No",value:0},{label:"Partial",value:5},{label:"Complete",value:10}]},
-    {key:"locker",name:"Electronic devices in locker",options:[{label:"Outside",value:0},{label:"Partial",value:5},{label:"Complete",value:10}]},
+    {key:"locker",name:"Electronic devices in locker",each:5,maxPoints:10},
     {key:"seatLever",name:"Ride seat belt lever turned ON",options:[{label:"No",value:0},{label:"Yes",value:10}]},
     {key:"visitorTicket",name:"Visitor at ticket counter",options:[{label:"Outside",value:0},{label:"Partial",value:5},{label:"Complete",value:10}]},
-    {key:"directionalSigns",name:"Directional signs not moved",options:[{label:"Moved",value:0},{label:"Not moved",value:20}]},
+    {key:"directionalSigns",name:"Directional signs not moved",each:10,maxPoints:20},
     {key:"homeParking",name:"Robot in home area",options:[{label:"Outside",value:0},{label:"Partial or complete",value:10}]}
   ];
 }
 function techiesTasks() {
   return [
-    {key:"visitors",name:"Visitors transported to correct rides",options:[{label:"0 visitors",value:0},{label:"1 complete",value:10},{label:"1 partial",value:5},{label:"2 complete",value:20},{label:"1 complete + 1 partial",value:15},{label:"2 partial",value:10}]},
+    {key:"visitors",name:"Visitors transported to correct rides",eachItem:["Visitor 1","Visitor 2"],options:[{label:"Not transported",value:0},{label:"Partial",value:5},{label:"Complete",value:10}]},
     {key:"engineer",name:"Engineer in ride maintenance zone",options:[{label:"Outside",value:0},{label:"Partial",value:5},{label:"Complete",value:10}]},
-    {key:"materials",name:"Construction materials in construction zone",options:[{label:"Outside",value:0},{label:"Partial",value:5},{label:"Complete",value:10}]},
+    {key:"materials",name:"Construction materials in construction zone",each:5,maxPoints:10},
     {key:"powerLever",name:"Main power supply lever turned OFF",options:[{label:"No",value:0},{label:"Yes",value:15}]},
-    {key:"directionalSigns",name:"Directional signs not moved",options:[{label:"Moved",value:0},{label:"Not moved",value:20}]},
+    {key:"directionalSigns",name:"Directional signs not moved",each:10,maxPoints:20},
     {key:"parking",name:"Robot in Start & Finish Area",options:[{label:"Outside",value:0},{label:"Partial or complete",value:15}]},
     {key:"bonus",name:"Fence not moved or damaged",options:[{label:"Moved/damaged",value:0},{label:"Not moved/damaged",value:40}]}
   ];

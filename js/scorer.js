@@ -1,7 +1,6 @@
 import { firebaseConfig } from "./firebase-config.js";
 import { LocalStore } from "./team-management.js";
 import { CATEGORIES, createScoreSheet } from "./scoring.js";
-import { RunTimer } from "./timer.js";
 import { initThemeToggle } from "./theme.js";
 
 const validConfig = firebaseConfig.projectId !== "YOUR_PROJECT_ID";
@@ -11,6 +10,7 @@ let teams = [], results = [], selectedCategory = null, selectedTeam = null, sele
 
 const $ = id => document.getElementById(id);
 const categories = ["Explorer","Innovator","Techies"];
+const categoryLabel = category => `${CATEGORIES[category]?.label || category} · Ages ${CATEGORIES[category]?.ages || ""}`;
 initThemeToggle();
 
 async function initFirebase() {
@@ -165,11 +165,11 @@ function renderTeams(){
   const search=$("teamSearch").value.trim().toLowerCase();
   $("teamCategoryCounts").innerHTML=categories.map(category=>{
     const count=teams.filter(team=>team.category===category&&team.active!==false&&(team.name||"").toLowerCase().includes(search)).length;
-    return `<div class="category-count">${category}: <strong>${count}</strong></div>`;
+    return `<div class="category-count">${escapeHtml(categoryLabel(category))}: <strong>${count}</strong></div>`;
   }).join("");
   $("teamLists").innerHTML=categories.map(category=>{
     const list=teams.filter(team=>team.category===category&&team.active!==false&&(team.name||"").toLowerCase().includes(search));
-    return `<div class="team-column"><h3>${category} (${list.length})</h3>${list.map(team=>`
+    return `<div class="team-column"><h3>${escapeHtml(categoryLabel(category))} (${list.length})</h3>${list.map(team=>`
       <div class="team-row"><span>${escapeHtml(team.name)}</span><div>
       <button class="small-button" type="button" data-edit="${team.id}">Edit</button>
       <button class="small-button" type="button" data-archive="${team.id}">Archive</button>
@@ -198,8 +198,8 @@ function renderTeams(){
     try {
       await deleteTeam(team.id);
       if(selectedTeam?.id===team.id){
-        timer.reset();selectedTeam=null;selectedRound=null;sheetApi=null;currentTotal=0;
-        $("runPanel").classList.add("hidden");$("scoreSheetPanel").classList.add("hidden");
+        selectedTeam=null;selectedRound=null;sheetApi=null;currentTotal=0;
+        $("scoreSheetPanel").classList.add("hidden");
         document.querySelectorAll(".round-options button").forEach(item=>item.classList.remove("selected"));
         renderTeamPicker();
       }
@@ -212,24 +212,10 @@ function renderTeams(){
   }));
 }
 
-const timer = new RunTimer($("timerDisplay"),$("timerStatus"));
-$("timerStart").addEventListener("click",()=>timer.start());
-$("timerStop").addEventListener("click",()=>{
-  timer.stop(false);
-  if(timer.actualSeconds!==null){
-    $("recordedTime").textContent=formatTime(timer.actualSeconds);
-    $("scoreSheetPanel").classList.remove("hidden");
-  }
-});
-$("timerReset").addEventListener("click",()=>{
-  if(timer.actualSeconds!==null&&!confirm("Reset the recorded run?"))return;
-  timer.reset();$("scoreSheetPanel").classList.add("hidden");
-});
-
 document.querySelectorAll(".category-options button").forEach(button=>button.addEventListener("click",()=>{
   document.querySelectorAll(".category-options button").forEach(item=>item.classList.remove("selected"));button.classList.add("selected");
   selectedCategory=button.dataset.category;selectedTeam=null;selectedRound=null;
-  timer.setCategory(selectedCategory);$("runPanel").classList.add("hidden");$("scoreSheetPanel").classList.add("hidden");
+  $("scoreSheetPanel").classList.add("hidden");
   document.querySelectorAll(".round-options button").forEach(item=>item.classList.remove("selected"));
   renderTeamPicker();
 }));
@@ -243,7 +229,7 @@ function renderTeamPicker(){
     selectedTeam=teams.find(team=>team.id===button.dataset.scoreTeam);selectedRound=null;
     document.querySelectorAll("[data-score-team]").forEach(item=>item.classList.remove("selected"));button.classList.add("selected");
     document.querySelectorAll(".round-options button").forEach(item=>item.classList.remove("selected"));
-    $("runPanel").classList.add("hidden");$("scoreSheetPanel").classList.add("hidden");
+    $("scoreSheetPanel").classList.add("hidden");
   }));
   $("goTeam")?.addEventListener("click",()=>document.querySelector('[data-view="teams"]').click());
 }
@@ -251,10 +237,10 @@ document.querySelectorAll(".round-options button").forEach(button=>button.addEve
   if(!selectedCategory||!selectedTeam)return toast("Select a category and team first.");
   selectedRound=Number(button.dataset.round);
   document.querySelectorAll(".round-options button").forEach(item=>item.classList.remove("selected"));button.classList.add("selected");
-  timer.setCategory(selectedCategory);$("runCategory").textContent=selectedCategory;$("runTeam").textContent=selectedTeam.name;$("runRound").textContent=`Round ${selectedRound}`;
-  $("runPanel").classList.remove("hidden");$("scoreSheetPanel").classList.add("hidden");
-  $("recordedTime").textContent="Not recorded";
-  $("scoreSheetTitle").textContent=`${selectedCategory} Score Sheet`;
+  $("scoreCategory").textContent=categoryLabel(selectedCategory);$("scoreTeam").textContent=selectedTeam.name;$("scoreRound").textContent=`Round ${selectedRound}`;
+  $("scoreSheetPanel").classList.remove("hidden");
+  $("runTimeInput").value="";
+  $("scoreSheetTitle").textContent=`${CATEGORIES[selectedCategory].label} Score Sheet`;
   sheetApi=createScoreSheet(
     selectedCategory,
     $("scoreSheet"),
@@ -267,12 +253,13 @@ document.querySelectorAll(".round-options button").forEach(button=>button.addEve
 $("scoreSheet").addEventListener("submit",async event=>{
   event.preventDefault();
   if(!selectedCategory||!selectedTeam||!selectedRound)return toast("Complete the scoring workflow first.");
-  if(timer.actualSeconds===null)return toast("Stop the timer before submitting.");
+  const actualTimeMilliseconds=parseRunTime($("runTimeInput").value);
+  if(actualTimeMilliseconds===null)return toast("Enter the run time as MM:SS:MMM.");
   const existing=results.find(result=>result.teamId===selectedTeam.id&&Number(result.roundNumber)==selectedRound);
   if(existing&&!confirm(`Round ${selectedRound} already has ${existing.totalScore} points. Replace the existing result?`))return;
   const result={
     id:existing?.id||crypto.randomUUID(),teamId:selectedTeam.id,teamName:selectedTeam.name,category:selectedCategory,
-    roundNumber:selectedRound,timeLimit:CATEGORIES[selectedCategory].timeLimit,actualTimeTaken:timer.actualSeconds,
+    roundNumber:selectedRound,actualTimeTaken:actualTimeMilliseconds/1000,actualTimeMilliseconds,
     taskBreakdown:sheetApi.getBreakdown(),totalScore:currentTotal,submissionTimestamp:new Date().toISOString()
   };
   try {
@@ -284,7 +271,7 @@ $("scoreSheet").addEventListener("submit",async event=>{
     return;
   }
   toast("Score submitted successfully");
-  timer.reset();$("scoreSheetPanel").classList.add("hidden");$("runPanel").classList.add("hidden");
+  $("scoreSheetPanel").classList.add("hidden");
   selectedRound=null;document.querySelectorAll(".round-options button").forEach(item=>item.classList.remove("selected"));
   refreshHistory();
 });
@@ -292,7 +279,7 @@ $("scoreSheet").addEventListener("submit",async event=>{
 function refreshHistory(){
   const category=$("historyCategory").value;const search=$("historySearch").value.trim().toLowerCase();
   const list=[...results].filter(result=>(!category||result.category===category)&&(result.teamName||"").toLowerCase().includes(search)).sort((a,b)=>new Date(b.submissionTimestamp)-new Date(a.submissionTimestamp));
-  $("historyList").innerHTML=list.length?list.map(result=>`<div class="history-row"><strong>${escapeHtml(result.teamName)}</strong><span>${escapeHtml(result.category)}</span><span>Round ${result.roundNumber}</span><strong>${result.totalScore} pts</strong><span>${formatTime(Number(result.actualTimeTaken||0))} · ${new Date(result.submissionTimestamp).toLocaleString()}</span><span class="history-actions"><button class="small-button danger" type="button" data-clear-score="${result.id}" aria-label="Clear score">Clear score</button></span></div>`).join(""):'<div class="muted" style="padding:24px">No submissions</div>';
+  $("historyList").innerHTML=list.length?list.map(result=>`<div class="history-row"><strong>${escapeHtml(result.teamName)}</strong><span>${escapeHtml(categoryLabel(result.category))}</span><span>Round ${result.roundNumber}</span><strong>${result.totalScore} pts</strong><span>${formatResultTime(result)} · ${new Date(result.submissionTimestamp).toLocaleString()}</span><span class="history-actions"><button class="small-button danger" type="button" data-clear-score="${result.id}" aria-label="Clear score">Clear score</button></span></div>`).join(""):'<div class="muted" style="padding:24px">No submissions</div>';
   document.querySelectorAll("[data-clear-score]").forEach(button=>button.addEventListener("click",()=>{
     const result=results.find(item=>item.id===button.dataset.clearScore); if(!result)return;
     pendingClearScore=result;
@@ -349,10 +336,21 @@ function renderDashboard(){
   $("dashboardStats").innerHTML=categories.map(category=>{
     const teamCount=teams.filter(team=>team.category===category&&team.active!==false).length;
     const participated=new Set(results.filter(result=>result.category===category).map(result=>result.teamId)).size;
-    return `<div class="stat-card"><span>${category} teams</span><strong>${teamCount}</strong><small>${participated} participated</small></div>`;
+    return `<div class="stat-card"><span>${escapeHtml(categoryLabel(category))} teams</span><strong>${teamCount}</strong><small>${participated} participated</small></div>`;
   }).join("");
 }
-function formatTime(seconds){return `${String(Math.floor(seconds/60)).padStart(2,"0")}:${String(seconds%60).padStart(2,"0")}`;}
+function parseRunTime(value){
+  const match=/^(\d{1,3}):([0-5]\d):(\d{3})$/.exec(value.trim());
+  if(!match)return null;
+  return (Number(match[1])*60+Number(match[2]))*1000+Number(match[3]);
+}
+function formatResultTime(result){
+  const milliseconds=Number(result.actualTimeMilliseconds ?? Number(result.actualTimeTaken ?? result.actualTimeSeconds ?? 0)*1000);
+  const minutes=Math.floor(milliseconds/60000);
+  const seconds=Math.floor(milliseconds/1000)%60;
+  const remainder=Math.floor(milliseconds%1000);
+  return `${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}:${String(remainder).padStart(3,"0")}`;
+}
 function escapeHtml(value){const div=document.createElement("div");div.textContent=value||"";return div.innerHTML;}
 function toast(message){const el=$("toast");el.textContent=message;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),2600);}
 

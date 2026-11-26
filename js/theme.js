@@ -14,7 +14,7 @@ function applyTheme(theme, savePreference) {
   });
 
   const themeColor = document.querySelector('meta[name="theme-color"]');
-  if (themeColor) themeColor.content = selectedTheme === "dark" ? "#08111f" : "#ffffff";
+  if (themeColor) themeColor.content = selectedTheme === "dark" ? "#081b30" : "#f3f6fb";
 }
 
 export function initThemeToggle() {

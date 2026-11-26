@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#ffffff">
-  <title>IRO 2026 Nationals | Scorer</title>
+  <meta name="theme-color" content="#f4f7fb">
+  <meta name="description" content="IRO 2026 Nationals live scoring console for authorized scorers.">
+  <title>Indian Robotics Olympiad 2026 | Scorer</title>
   <link rel="icon" type="image/png" href="assets/iro-2026-logo.png">
   <link rel="apple-touch-icon" href="assets/iro-2026-logo.png">
   <link rel="stylesheet" href="css/style.css">
@@ -13,7 +14,7 @@
 </head>
 <body class="scorer-body">
   <aside class="sidebar">
-    <div class="sidebar-brand"><img class="brand-logo" src="assets/iro-2026-logo.png" alt="IRO logo"><div><strong>IRO 2026</strong><span>NATIONALS</span></div></div>
+    <div class="sidebar-brand"><img class="brand-logo" src="assets/iro-2026-logo.png" alt="Indian Robotics Olympiad logo"><div><strong>IRO 2026</strong><span>NATIONALS</span></div></div>
     <nav>
       <button class="nav-item active" data-view="dashboard" type="button">Dashboard</button>
       <button class="nav-item" data-view="teams" type="button">Manage Teams</button>
@@ -25,7 +26,7 @@
 
   <main class="scorer-main">
     <header class="scorer-header">
-      <div><span class="eyebrow">SCORER CONSOLE</span><h1 id="viewTitle">Dashboard</h1></div>
+      <div><span class="eyebrow">INDIAN ROBOTICS OLYMPIAD · 2026 NATIONALS</span><h1 id="viewTitle">Dashboard</h1></div>
       <div class="header-actions">
         <a class="icon-button" href="index.html" target="_blank" title="Open live leaderboard">LIVE ↗</a>
         <button class="theme-toggle" data-theme-toggle type="button">Dark mode</button>
@@ -35,9 +36,13 @@
     </header>
 
     <section id="dashboardView" class="view active">
+      <div class="event-banner">
+        <span class="eyebrow">BUILDING TOMORROW'S INNOVATORS, ONE ROBOT AT A TIME</span>
+        <p>Live scoring for the IRO 2026 Nationals</p>
+      </div>
       <div class="stat-grid" id="dashboardStats"></div>
       <div class="panel">
-        <div class="panel-heading"><div><span class="eyebrow">QUICK ACTION</span><h2>Start a Run</h2></div></div>
+        <div class="panel-heading"><div><span class="eyebrow">QUICK ACTION</span><h2>Enter Scores</h2></div></div>
         <button class="button primary" id="quickScore" type="button">Enter a Score</button>
       </div>
     </section>
@@ -46,7 +51,7 @@
       <div class="panel team-form-panel">
         <div class="panel-heading"><div><span class="eyebrow">TEAM MANAGEMENT</span><h2 id="teamFormTitle">Add Team</h2></div></div>
         <form id="teamForm" class="team-form">
-          <label>Category<select id="teamCategory" required><option>Explorer</option><option>Innovator</option><option>Techies</option></select></label>
+          <label>Category<select id="teamCategory" required><option value="Explorer">Explorers · Ages 5–7</option><option value="Innovator">Innovators · Ages 7–10</option><option value="Techies">Techies · Ages 10–15</option></select></label>
           <label>Team name<input id="teamName" required maxlength="80" placeholder="Enter team name"></label>
           <input id="teamId" type="hidden">
           <button id="teamSubmit" class="button primary" type="submit">Add Team</button>
@@ -68,9 +73,9 @@
         <div class="workflow-step">
           <span class="step-number">1</span><strong>Select Category</strong>
           <div class="category-options">
-            <button type="button" data-category="Explorer">Explorer</button>
-            <button type="button" data-category="Innovator">Innovator</button>
-            <button type="button" data-category="Techies">Techies</button>
+            <button type="button" data-category="Explorer">Explorers <small>5–7</small></button>
+            <button type="button" data-category="Innovator">Innovators <small>7–10</small></button>
+            <button type="button" data-category="Techies">Techies <small>10–15</small></button>
           </div>
         </div>
         <div class="workflow-step">
@@ -87,23 +92,17 @@
         </div>
       </div>
 
-      <div id="runPanel" class="panel run-panel hidden">
-        <div class="run-context"><span id="runCategory">—</span><strong id="runTeam">—</strong><span id="runRound">—</span></div>
-        <div class="timer" id="timerDisplay">10:00</div>
-        <div class="timer-actions">
-          <button id="timerStart" class="button primary" type="button">Start</button>
-          <button id="timerStop" class="button danger" type="button">Stop</button>
-          <button id="timerReset" class="button secondary" type="button">Reset</button>
-        </div>
-        <p id="timerStatus" class="muted">Timer ready</p>
-      </div>
-
       <div id="scoreSheetPanel" class="panel hidden">
-        <div class="panel-heading"><div><span class="eyebrow">OFFICIAL SCORE SHEET</span><h2 id="scoreSheetTitle">Score Entry</h2></div><strong id="scoreMaximum">Maximum: 100</strong></div>
+        <div class="score-context"><span id="scoreCategory">—</span><strong id="scoreTeam">—</strong><span id="scoreRound">—</span></div>
+        <div class="panel-heading"><div><span class="eyebrow">IRO 2026 SCORE SHEET</span><h2 id="scoreSheetTitle">Score Entry</h2></div><strong id="scoreMaximum">Maximum: 100</strong></div>
         <form id="scoreSheet"></form>
         <div class="score-review">
-          <div><span>Recorded time</span><strong id="recordedTime">Not recorded</strong></div>
           <div><span>Total score</span><strong id="liveTotal">0</strong></div>
+          <label class="run-time-field" for="runTimeInput">
+            Run time <span>min : sec : milliseconds</span>
+            <input id="runTimeInput" name="runTime" type="text" inputmode="numeric" autocomplete="off" placeholder="00:00:000" maxlength="10" pattern="[0-9]{1,3}:[0-5][0-9]:[0-9]{3}" aria-describedby="runTimeHelp" form="scoreSheet" required>
+            <small id="runTimeHelp" class="muted">Enter as MM:SS:MMM, for example 01:23:456.</small>
+          </label>
           <button id="submitScore" class="button primary" type="submit" form="scoreSheet">UPDATE SCORE</button>
         </div>
       </div>
@@ -113,14 +112,14 @@
       <div class="panel">
         <div class="panel-heading"><div><span class="eyebrow">PAST RESULTS</span><h2>Submission History</h2></div></div>
         <div class="history-filters">
-          <select id="historyCategory"><option value="">All categories</option><option>Explorer</option><option>Innovator</option><option>Techies</option></select>
+          <select id="historyCategory"><option value="">All categories</option><option value="Explorer">Explorers · Ages 5–7</option><option value="Innovator">Innovators · Ages 7–10</option><option value="Techies">Techies · Ages 10–15</option></select>
           <input id="historySearch" class="search-input" placeholder="Search team…">
         </div>
         <div id="historyList" class="history-list"></div>
       </div>
     </section>
 
-    <footer class="organizer-footer">Organisers: <strong>ROBO-G</strong></footer>
+    <footer class="organizer-footer">Indian Robotics Olympiad 2026 · Organised by <strong>ROBO-G</strong></footer>
   </main>
 
   <dialog id="authDialog">
