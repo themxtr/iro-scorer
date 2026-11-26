@@ -1,7 +1,39 @@
+import { getScoreTaskColumns } from "./scoring.js";
+
 const workbookNamespace = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
 const relationshipNamespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
 const packageRelationshipNamespace = "http://schemas.openxmlformats.org/package/2006/relationships";
 const contentTypeNamespace = "http://schemas.openxmlformats.org/package/2006/content-types";
+const shortTaskLabels = {
+  trashRemoved: "Park Trash",
+  trashKids: "Park Kids Safe",
+  trashBin: "Recycle Bin",
+  visitorPicked: "Visitor Picked",
+  visitorRides: "Visitor Rides Safe",
+  visitorKids: "Visitor Kids Safe",
+  visitorCounter: "Ticket Counter",
+  powerOff: "Switches Off",
+  powerRides: "Power Rides Safe",
+  barrierRemoved: "Barrier Removed",
+  barrierKids: "Barrier Kids Safe",
+  barrierRides: "Barrier Rides Safe",
+  engineerPosition: "Engineer Zone",
+  wallMoved: "Wall Unmoved",
+  barrier: "Crowd Barrier",
+  fireExit: "Fire Gate",
+  locker: "Devices Locker",
+  seatLever: "Seat Belt Lever",
+  visitorTicket: "Ticket Counter",
+  directionalSigns: "Signs",
+  homeParking: "Home Area",
+  partialVisitors: "Visitors Partial",
+  completeVisitors: "Visitors Complete",
+  engineer: "Engineer Zone",
+  materials: "Materials Zone",
+  powerLever: "Power Lever",
+  parking: "Start / Finish",
+  fences: "Fences"
+};
 const encoder = new TextEncoder();
 const crcTable = Uint32Array.from({ length: 256 }, (_, value) => {
   let crc = value;
@@ -24,18 +56,27 @@ export function createScoresWorkbook(categories, results) {
     { name: "xl/workbook.xml", content: workbookXml(sheets) },
     { name: "xl/_rels/workbook.xml.rels", content: workbookRelationshipsXml(sheets) },
     { name: "xl/styles.xml", content: stylesXml() },
-    ...sheets.map(sheet => ({
-      name: `xl/worksheets/sheet${sheet.id}.xml`,
-      content: worksheetXml(categoryRows(sheet.key, sheet.name, results))
-    }))
+    ...sheets.map(sheet => {
+      const worksheet = categoryRows(sheet.key, sheet.name, results);
+      return {
+        name: `xl/worksheets/sheet${sheet.id}.xml`,
+        content: worksheetXml(worksheet.rows, worksheet.widths)
+      };
+    })
   ];
   return createZip(files);
 }
 
 function categoryRows(category, label, results) {
+  const taskColumns = getScoreTaskColumns(category).map(task => ({
+    ...task,
+    shortName: shortTaskLabels[task.key] || task.name
+  }));
   const headers = [
-    "Team Name", "Selected Task", "Scoring Item", "Recorded Choice / Count",
-    "Task Points", "Round Total", "Run Time (MM:SS:MMM)", "Submitted At"
+    "Team Name",
+    ...(category === "Explorer" ? ["Selected Task"] : []),
+    ...taskColumns.map(task => task.shortName),
+    "Total Score", "Run Time (MM:SS:MMM)", "Submitted At", "Task Details"
   ];
   const rows = [
     [{ value: `IRO 2026 — ${label} Scores`, style: 2 }],
@@ -43,60 +84,53 @@ function categoryRows(category, label, results) {
     [{ value: "Round 1", style: 2 }],
     headers.map(value => ({ value, style: 1 }))
   ];
-  rows.push(...roundRows(category, 1, results));
+  rows.push(...roundRows(category, 1, results, taskColumns));
   rows.push([]);
   rows.push([{ value: "Round 2", style: 2 }]);
   rows.push(headers.map(value => ({ value, style: 1 })));
-  rows.push(...roundRows(category, 2, results));
-  return rows;
+  rows.push(...roundRows(category, 2, results, taskColumns));
+  const widths = [
+    28,
+    ...(category === "Explorer" ? [24] : []),
+    ...taskColumns.map(() => 18),
+    13, 22, 26, 60
+  ];
+  return { rows, widths };
 }
 
-function roundRows(category, roundNumber, results) {
+function roundRows(category, roundNumber, results, taskColumns) {
   return results
     .filter(result => result.category === category && Number(result.roundNumber) === roundNumber)
     .sort((a, b) => String(a.teamName || "").localeCompare(String(b.teamName || "")))
-    .flatMap(result => resultRows(result));
+    .map(result => resultRow(result, category, taskColumns));
 }
 
-function resultRows(result) {
+function resultRow(result, category, taskColumns) {
   const breakdown = result.taskBreakdown && typeof result.taskBreakdown === "object"
     ? result.taskBreakdown
     : {};
-  const selectedTask = typeof breakdown.selectedTask === "string" ? breakdown.selectedTask : "";
-  const entries = Object.entries(breakdown)
-    .filter(([key, item]) => key !== "selectedTask" && item && typeof item === "object");
-  const summary = [
+  return [
     String(result.teamName || result.teamId || ""),
-    selectedTask
-  ];
-  const common = [
+    ...(category === "Explorer" ? [String(breakdown.selectedTask || "")] : []),
+    ...taskColumns.map(task => numericCell(breakdown[task.key]?.value)),
     numericCell(result.totalScore),
     formatRunTime(result),
-    formatSubmittedAt(result.submissionTimestamp)
+    formatSubmittedAt(result.submissionTimestamp),
+    formatTaskDetails(breakdown, taskColumns)
   ];
-  if (!entries.length) {
-    return [[...summary, "", "", "", ...common]];
-  }
+}
 
-  return entries.flatMap(([key, task]) => {
-    const taskLabel = String(task.label || key);
+function formatTaskDetails(breakdown, taskColumns) {
+  return taskColumns.flatMap(taskColumn => {
+    const task = breakdown[taskColumn.key];
+    if (!task) return [];
     if (Array.isArray(task.items) && task.items.length) {
-      return task.items.map(item => [
-        ...summary,
-        taskLabel,
-        String(item.label || ""),
-        numericCell(item.value),
-        ...common
-      ]);
+      return task.items.map(item =>
+        `${taskColumn.shortName} / ${item.label}: ${item.option || `${item.value} pts`}`
+      );
     }
-    return [[
-      ...summary,
-      taskLabel,
-      String(task.option || ""),
-      numericCell(task.value),
-      ...common
-    ]];
-  });
+    return [`${taskColumn.shortName}: ${task.option || `${task.value} pts`}`];
+  }).join("; ");
 }
 
 function numericCell(value) {
@@ -124,8 +158,7 @@ function formatSubmittedAt(value) {
   return Number.isNaN(date.getTime()) ? String(value) : date.toISOString();
 }
 
-function worksheetXml(rows) {
-  const columnWidths = [28, 26, 30, 42, 13, 13, 22, 26];
+function worksheetXml(rows, columnWidths) {
   const columns = columnWidths.map((width, index) =>
     `<col min="${index + 1}" max="${index + 1}" width="${width}" customWidth="1"/>`
   ).join("");
@@ -133,7 +166,7 @@ function worksheetXml(rows) {
     const cells = row.map((cell, columnIndex) => cellXml(cell, rowIndex + 1, columnIndex + 1)).join("");
     return `<row r="${rowIndex + 1}">${cells}</row>`;
   }).join("");
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="${workbookNamespace}"><dimension ref="A1:H${rows.length}"/><sheetViews><sheetView workbookViewId="0"/></sheetViews><sheetFormatPr defaultRowHeight="18"/><cols>${columns}</cols><sheetData>${sheetRows}</sheetData></worksheet>`;
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="${workbookNamespace}"><dimension ref="A1:${columnName(columnWidths.length)}${rows.length}"/><sheetViews><sheetView workbookViewId="0"><pane xSplit="1" topLeftCell="B1" activePane="topRight" state="frozen"/><selection pane="topRight" activeCell="B1" sqref="B1"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="18"/><cols>${columns}</cols><sheetData>${sheetRows}</sheetData></worksheet>`;
 }
 
 function cellXml(cell, row, column) {

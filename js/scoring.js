@@ -290,3 +290,14 @@ function techiesTasks() {
     {key:"fences",name:"Fences not moved or damaged",each:8,maxPoints:40}
   ];
 }
+
+export function getScoreTaskColumns(category) {
+  const tasks = category === "Explorer"
+    ? explorerTasks.flatMap(task => task.entries)
+    : category === "Innovator"
+      ? innovatorTasks()
+      : category === "Techies"
+        ? techiesTasks()
+        : [];
+  return tasks.map(({ key, name }) => ({ key, name }));
+}
