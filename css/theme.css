@@ -420,3 +420,138 @@ body {
     flex: 1 1 100%;
   }
 }
+
+:root[data-theme="light"] {
+  --public-bg: #ffffff;
+  --public-panel: #ffffff;
+  --public-panel-muted: #f3f3f3;
+  --public-text: #111111;
+  --public-muted: #555555;
+  --public-border: #cccccc;
+  --public-current-bg: #111111;
+  --public-current-text: #ffffff;
+}
+
+:root[data-theme="dark"] {
+  --public-bg: #111111;
+  --public-panel: #171717;
+  --public-panel-muted: #242424;
+  --public-text: #ffffff;
+  --public-muted: #cccccc;
+  --public-border: #555555;
+  --public-current-bg: #ffffff;
+  --public-current-text: #111111;
+}
+
+.public-body {
+  background: var(--public-bg);
+  color: var(--public-text);
+}
+
+.public-body .public-header {
+  height: 72px;
+  padding: 0 3vw;
+  background: var(--public-panel);
+  border-bottom: 1px solid var(--public-border);
+}
+
+.public-body .brand h1,
+.public-body .eyebrow,
+.public-body .leaderboard-heading h2 {
+  color: var(--public-text);
+}
+
+.public-body .live-dot {
+  background: var(--public-text);
+  box-shadow: none;
+  border-radius: 50% !important;
+}
+
+.public-body .leaderboard-shell {
+  overflow: hidden;
+  background: var(--public-panel);
+  border: 1px solid var(--public-border);
+  border-radius: 14px !important;
+  box-shadow: none !important;
+}
+
+.public-body .leaderboard-heading,
+.public-body .leaderboard-meta div,
+.public-body .leaderboard-wrap,
+.public-body th,
+.public-body td {
+  border-color: var(--public-border);
+}
+
+.public-body .leaderboard-meta span,
+.public-body .leaderboard-footer {
+  color: var(--public-muted);
+}
+
+.public-body td {
+  color: var(--public-text);
+}
+
+.public-body th {
+  background: var(--public-panel-muted);
+  color: var(--public-text);
+}
+
+.public-body tbody tr:first-child td {
+  background: var(--public-panel);
+  color: var(--public-text);
+}
+
+.public-body tbody tr:first-child td:first-child {
+  color: var(--public-text);
+}
+
+.public-body .rank-badge {
+  background: var(--public-panel-muted);
+  color: var(--public-text);
+}
+
+.public-body .team-score {
+  color: var(--public-text);
+}
+
+.public-body .current-team td {
+  background: var(--public-current-bg) !important;
+  color: var(--public-current-text) !important;
+}
+
+.public-body .current-team .team-score {
+  color: var(--public-current-text) !important;
+}
+
+.public-body .theme-toggle,
+.public-body .icon-button,
+.public-body .connection-status {
+  background: var(--public-panel);
+  color: var(--public-text);
+  border-color: var(--public-border);
+}
+
+.public-body .theme-toggle,
+.public-body .icon-button {
+  border-radius: 8px !important;
+  box-shadow: none;
+}
+
+.public-body .connection-status {
+  border-radius: 20px !important;
+  box-shadow: none;
+}
+
+.public-body .leaderboard-footer strong,
+.public-body .organizer-footer strong {
+  color: var(--public-text);
+}
+
+@media (max-width: 760px) {
+  .public-body .public-header {
+    height: auto;
+    min-height: 64px;
+    padding: 8px 12px;
+  }
+}
