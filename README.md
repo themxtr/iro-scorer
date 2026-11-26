@@ -11,7 +11,7 @@ The mobile-friendly scorer and live results pages are static HTML/CSS/JavaScript
 3. Create a Firestore database.
 4. Copy the Firebase Web app configuration into `js/firebase-config.js`.
    The Firebase web config is visible in the browser by design. Never put a service-account key or Admin SDK credential in this repository.
-5. In Firebase Authentication → Settings → Authorized domains, add `themxtr.github.io`.
+5. In Firebase Authentication → Settings → Authorized domains, add `themxtr.github.io`. For local preview, use `localhost` or add the exact host (such as `127.0.0.1`) there too.
 6. Firebase Authentication creates the Google user automatically at first sign-in. The scorer UI and Firestore rules authorize only the verified `robogbangalore@gmail.com` account.
 7. Publish the rules with `firebase deploy --only firestore:rules --project iro2026`, or paste the contents of `firebase.rules` in Firestore → Rules. The included `firebase.json` maps the rules file for Firebase CLI deployment.
 

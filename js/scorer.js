@@ -5,7 +5,7 @@ import { initThemeToggle } from "./theme.js";
 
 const validConfig = firebaseConfig.projectId !== "YOUR_PROJECT_ID";
 const allowedScorerEmail = "robogbangalore@gmail.com";
-let db, auth, Firestore, GoogleAuthProvider, signInWithPopup, signOut, localStore = new LocalStore();
+let db, auth, Firestore, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, localStore = new LocalStore();
 let teams = [], results = [], selectedCategory = null, selectedTeam = null, selectedRound = null, pendingClearScore = null, sheetApi = null, currentTotal = 0, firestoreReady = false, localMode = false;
 
 const $ = id => document.getElementById(id);
@@ -27,11 +27,17 @@ async function initFirebase() {
     auth = authModule.getAuth(app);
     GoogleAuthProvider = authModule.GoogleAuthProvider;
     signInWithPopup = authModule.signInWithPopup;
+    signInWithRedirect = authModule.signInWithRedirect;
+    getRedirectResult = authModule.getRedirectResult;
     signOut = authModule.signOut;
     db = firestoreModule.getFirestore(app);
     Firestore = firestoreModule;
     firestoreReady = true;
     $("connectionStatus").textContent = "Live updates connected";
+    getRedirectResult(auth).catch(error => {
+      $("authError").textContent = authErrorMessage(error);
+      $("authDialog").showModal();
+    });
     authModule.onAuthStateChanged(auth, user => {
       if (user && !isAuthorizedScorer(user)) {
         $("authStatus").textContent = "Unauthorized account";
@@ -326,10 +332,34 @@ $("googleSignIn").addEventListener("click",async()=>{
     }
     $("authDialog").close();
   }catch(error){
-    if(error.code==="auth/popup-closed-by-user")return;
-    $("authError").textContent="Google sign-in is unavailable. Check your connection or contact an organizer.";
+    if(error.code==="auth/popup-blocked"){
+      try{
+        await signInWithRedirect(auth,provider);
+        return;
+      }catch(redirectError){
+        $("authError").textContent=authErrorMessage(redirectError);
+        return;
+      }
+    }
+    $("authError").textContent=authErrorMessage(error);
   }
 });
+
+function authErrorMessage(error){
+  if(error.code==="auth/unauthorized-domain"){
+    return `Add ${window.location.hostname} to Firebase Authentication's Authorized domains, then try again.`;
+  }
+  if(error.code==="auth/operation-not-allowed"){
+    return "Google sign-in is disabled. Enable Google under Firebase Authentication sign-in providers.";
+  }
+  if(error.code==="auth/popup-closed-by-user"){
+    return "The Google sign-in window was closed before sign-in finished.";
+  }
+  if(error.code==="auth/popup-blocked"){
+    return "Your browser blocked the Google sign-in window. Allow pop-ups for this site and try again.";
+  }
+  return `Google sign-in failed${error.code ? ` (${error.code})` : ""}. Check your connection or contact an organizer.`;
+}
 
 function refreshAll(){renderTeams();refreshHistory();renderDashboard();}
 function renderDashboard(){
