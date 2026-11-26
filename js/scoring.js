@@ -271,7 +271,7 @@ function innovatorTasks() {
     {key:"wallMoved",name:"Wall in maintenance zone not moved",options:[{label:"Moved",value:0},{label:"Not moved",value:10}]},
     {key:"barrier",name:"Crowd control barrier",options:[{label:"Outside",value:0},{label:"Partial",value:5},{label:"Complete",value:10}]},
     {key:"fireExit",name:"Fire exit gate removed",options:[{label:"No",value:0},{label:"Partial",value:5},{label:"Complete",value:10}]},
-    {key:"locker",name:"Electronic devices in locker",each:5,maxPoints:10},
+    {key:"locker",name:"Electronic devices in locker",options:[{label:"Outside",value:0},{label:"Partial",value:5},{label:"Complete",value:10}]},
     {key:"seatLever",name:"Ride seat belt lever turned ON",options:[{label:"No",value:0},{label:"Yes",value:10}]},
     {key:"visitorTicket",name:"Visitor at ticket counter",options:[{label:"Outside",value:0},{label:"Partial",value:5},{label:"Complete",value:10}]},
     {key:"directionalSigns",name:"Directional signs not moved",each:10,maxPoints:20},
@@ -283,10 +283,10 @@ function techiesTasks() {
     {key:"partialVisitors",name:"Visitors partially inside the correct ride",each:5,maxPoints:20,countGroup:"visitors",countGroupMax:4,countGroupLabel:"visitors"},
     {key:"completeVisitors",name:"Visitors completely inside the correct ride",each:10,maxPoints:40,countGroup:"visitors",countGroupMax:4,countGroupLabel:"visitors"},
     {key:"engineer",name:"Engineer in ride maintenance zone",options:[{label:"Outside",value:0},{label:"Partial",value:5},{label:"Complete",value:10}]},
-    {key:"materials",name:"Construction materials in construction zone",each:5,maxPoints:10},
+    {key:"materials",name:"Construction materials in construction zone",options:[{label:"Outside",value:0},{label:"Partial",value:5},{label:"Complete",value:10}]},
     {key:"powerLever",name:"Main power supply lever turned OFF",options:[{label:"No",value:0},{label:"Yes",value:15}]},
     {key:"directionalSigns",name:"Directional signs not moved",each:10,maxPoints:20},
     {key:"parking",name:"Robot in Start & Finish Area",options:[{label:"Outside",value:0},{label:"Partial or complete",value:15}]},
-    {key:"bonus",name:"Fence not moved or damaged",options:[{label:"Moved/damaged",value:0},{label:"Not moved/damaged",value:40}]}
+    {key:"fences",name:"Fences not moved or damaged",each:8,maxPoints:40}
   ];
 }
