@@ -70,12 +70,11 @@ function renderTasks(entries, fields, calculate) {
       const label = document.createElement("label");
       label.className = "score-counter";
       const description = document.createElement("span");
-      description.textContent = `${task.each} points each (maximum ${task.maxPoints})`;
       const counter = document.createElement("input");
       counter.className = "score-counter-input";
       counter.type = "number";
       counter.min = "0";
-      counter.max = String(task.maxPoints / task.each);
+      counter.max = String(task.countGroupMax || task.maxPoints / task.each);
       counter.step = "1";
       counter.value = "0";
       counter.dataset.scoreCount = task.key;
@@ -84,11 +83,23 @@ function renderTasks(entries, fields, calculate) {
       points.className = "score-counter-points";
       points.setAttribute("aria-live", "polite");
       points.textContent = "0 points";
+      const maximum = task.countGroupMax
+        ? `maximum ${task.countGroupMax} ${task.countGroupLabel} combined`
+        : `maximum ${task.maxPoints}`;
+      description.textContent = `${task.each} points each (${maximum})`;
       label.append(description, counter, points);
       counter.addEventListener("input", () => {
-        const count = countForTask(task, counter.value);
+        const availableCount = availableCountForTask(task, entries, fields);
+        counter.max = String(availableCount);
+        const count = countForTask(task, counter.value, availableCount);
         if (counter.value !== "" && Number(counter.value) !== count) counter.value = String(count);
         points.textContent = `${count * task.each} points`;
+        if (task.countGroup) {
+          entries.filter(entry => entry.countGroup === task.countGroup).forEach(entry => {
+            const groupedCounter = fields.querySelector(`[data-score-count="${entry.key}"]`);
+            groupedCounter.max = String(availableCountForTask(entry, entries, fields));
+          });
+        }
         calculate();
       });
       box.appendChild(label);
@@ -138,10 +149,10 @@ function renderTasks(entries, fields, calculate) {
 }
 
 function calculateScore(entries, container) {
+  const counts = getTaskCounts(entries, container);
   return entries.reduce((total, task) => {
     if (task.each) {
-      const counter = container.querySelector(`[data-score-count="${task.key}"]`);
-      return total + countForTask(task, counter?.value) * task.each;
+      return total + counts.get(task.key) * task.each;
     }
     if (task.eachItem) {
       return total + task.eachItem.reduce((itemTotal, _, index) => {
@@ -154,10 +165,34 @@ function calculateScore(entries, container) {
   }, 0);
 }
 
-function countForTask(task, value) {
+function countForTask(task, value, maxCount = task.maxPoints / task.each) {
   const count = Number(value);
   if (!Number.isFinite(count)) return 0;
-  return Math.min(task.maxPoints / task.each, Math.max(0, Math.floor(count)));
+  return Math.min(maxCount, Math.max(0, Math.floor(count)));
+}
+
+function availableCountForTask(task, entries, container) {
+  if (!task.countGroup) return task.maxPoints / task.each;
+  const used = entries
+    .filter(entry => entry.countGroup === task.countGroup && entry.key !== task.key)
+    .reduce((total, entry) => {
+      const counter = container.querySelector(`[data-score-count="${entry.key}"]`);
+      return total + countForTask(entry, counter?.value);
+    }, 0);
+  return Math.max(0, task.countGroupMax - used);
+}
+
+function getTaskCounts(entries, container) {
+  const groupCounts = new Map();
+  return new Map(entries.filter(task => task.each).map(task => {
+    const counter = container.querySelector(`[data-score-count="${task.key}"]`);
+    const maxCount = task.countGroup
+      ? Math.max(0, task.countGroupMax - (groupCounts.get(task.countGroup) || 0))
+      : undefined;
+    const count = countForTask(task, counter?.value, maxCount);
+    if (task.countGroup) groupCounts.set(task.countGroup, (groupCounts.get(task.countGroup) || 0) + count);
+    return [task.key, count];
+  }));
 }
 
 function maximumForTask(task) {
@@ -168,10 +203,10 @@ function maximumForTask(task) {
 }
 
 function getBreakdown(entries, container) {
+  const counts = getTaskCounts(entries, container);
   return Object.fromEntries(entries.map(task => {
     if (task.each) {
-      const counter = container.querySelector(`[data-score-count="${task.key}"]`);
-      const count = countForTask(task, counter?.value);
+      const count = counts.get(task.key);
       const value = count * task.each;
       return [task.key, { label: task.name, value, count, each: task.each, option: `${count} × ${task.each}` }];
     }
@@ -245,7 +280,8 @@ function innovatorTasks() {
 }
 function techiesTasks() {
   return [
-    {key:"visitors",name:"Visitors transported to correct rides",eachItem:["Visitor 1","Visitor 2"],options:[{label:"Not transported",value:0},{label:"Partial",value:5},{label:"Complete",value:10}]},
+    {key:"partialVisitors",name:"Visitors partially inside the correct ride",each:5,maxPoints:20,countGroup:"visitors",countGroupMax:4,countGroupLabel:"visitors"},
+    {key:"completeVisitors",name:"Visitors completely inside the correct ride",each:10,maxPoints:40,countGroup:"visitors",countGroupMax:4,countGroupLabel:"visitors"},
     {key:"engineer",name:"Engineer in ride maintenance zone",options:[{label:"Outside",value:0},{label:"Partial",value:5},{label:"Complete",value:10}]},
     {key:"materials",name:"Construction materials in construction zone",each:5,maxPoints:10},
     {key:"powerLever",name:"Main power supply lever turned OFF",options:[{label:"No",value:0},{label:"Yes",value:15}]},
