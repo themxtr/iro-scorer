@@ -413,6 +413,11 @@ body {
   font-size: .9rem;
 }
 
+.scorer-body #exportScores:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
 .run-time-field span,
 .run-time-field small {
   color: var(--muted);

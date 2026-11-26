@@ -43,6 +43,8 @@ async function initFirebase() {
       if (user && !isAuthorizedScorer(user)) {
         $("authStatus").textContent = "Unauthorized account";
         $("authButton").textContent = "Sign in";
+        $("exportScores").disabled = true;
+        $("exportScores").title = "Sign in with the authorized scorer account to download scores";
         $("authError").textContent = `No entry. Only verified ${allowedScorerEmail} is allowed.`;
         toast(`No entry. Only verified ${allowedScorerEmail} is allowed.`);
         authModule.signOut(auth).catch(() => toast("Could not sign out. Please try again."));
@@ -73,6 +75,10 @@ function initLocal() {
 function updateAuth(user) {
   $("authStatus").textContent = user ? `Signed in${user.email ? `: ${user.email}` : ""}` : "Not signed in";
   $("authButton").textContent = user ? "Sign out" : "Sign in";
+  $("exportScores").disabled = !isAuthorizedScorer(user);
+  $("exportScores").title = isAuthorizedScorer(user)
+    ? "Download scores for all categories"
+    : "Sign in with the authorized scorer account to download scores";
 }
 
 function isAuthorizedScorer(user) {
@@ -317,6 +323,10 @@ $("historyCategory").addEventListener("change",refreshHistory);$("historySearch"
 $("exportScores").addEventListener("click",downloadScoresWorkbook);
 $("cancelClearScore").addEventListener("click",()=>$("clearScoreDialog").close());
 function downloadScoresWorkbook(){
+  if(!isAuthorizedScorer(auth?.currentUser)){
+    toast(`Sign in with verified ${allowedScorerEmail} to export scores.`);
+    return;
+  }
   try{
     const workbook=createScoresWorkbook(categories,results);
     const blob=new Blob([workbook],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
