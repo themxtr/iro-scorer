@@ -611,6 +611,41 @@ body {
   font-size: .9rem;
 }
 
+.public-body .iro-about {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  align-items: center;
+  gap: 24px;
+  max-width: 1100px;
+  margin: 36px auto;
+  padding: 24px 16px;
+  border-top: 1px solid var(--public-border);
+  color: var(--public-text);
+}
+
+.public-body .iro-about img {
+  display: block;
+  width: 140px;
+  height: auto;
+  background: #ffffff;
+}
+
+.public-body .iro-about h2 {
+  margin: 0 0 10px;
+  color: var(--public-text);
+}
+
+.public-body .iro-about p {
+  margin: 8px 0;
+  color: var(--public-muted);
+  line-height: 1.6;
+}
+
+.public-body .iro-about a {
+  color: var(--public-text);
+  text-decoration: underline;
+}
+
 .public-body .leaderboard-shell,
 .public-body .rank-badge,
 .public-body .theme-toggle,
@@ -620,8 +655,16 @@ body {
   border-radius: 0 !important;
 }
 
+.public-body .connection-status {
+  position: static;
+  width: fit-content;
+  margin: 16px auto;
+  text-align: center;
+}
+
 :root:fullscreen .public-header,
 :root:fullscreen .iro-intro,
+:root:fullscreen .iro-about,
 :root:fullscreen .leaderboard-heading,
 :root:fullscreen .leaderboard-footer,
 :root:fullscreen .organizer-footer,
@@ -671,6 +714,17 @@ body {
     right: 50%;
     bottom: 10px;
     transform: translateX(50%);
+  }
+
+  .public-body .iro-about {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 16px;
+    text-align: center;
+  }
+
+  .public-body .iro-about img {
+    width: 110px;
   }
 
   :root:fullscreen #leaderboardWrap {
