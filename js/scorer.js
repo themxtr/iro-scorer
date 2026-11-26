@@ -2,6 +2,7 @@ import { firebaseConfig } from "./firebase-config.js";
 import { LocalStore } from "./team-management.js";
 import { CATEGORIES, createScoreSheet } from "./scoring.js";
 import { initThemeToggle } from "./theme.js";
+import { createScoresWorkbook } from "./excel-export.js";
 
 const validConfig = firebaseConfig.projectId !== "YOUR_PROJECT_ID";
 const allowedScorerEmail = "robogbangalore@gmail.com";
@@ -313,7 +314,27 @@ function refreshHistory(){
   }));
 }
 $("historyCategory").addEventListener("change",refreshHistory);$("historySearch").addEventListener("input",refreshHistory);
+$("exportScores").addEventListener("click",downloadScoresWorkbook);
 $("cancelClearScore").addEventListener("click",()=>$("clearScoreDialog").close());
+function downloadScoresWorkbook(){
+  try{
+    const workbook=createScoresWorkbook(categories,results);
+    const blob=new Blob([workbook],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+    const url=URL.createObjectURL(blob);
+    const link=document.createElement("a");
+    link.href=url;
+    link.download=`iro-2026-scores-${new Date().toISOString().slice(0,10)}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(()=>URL.revokeObjectURL(url),1000);
+    toast("Excel workbook downloaded");
+  }catch(error){
+    console.error("Could not create the Excel workbook.",error);
+    toast("Could not create the Excel workbook. Please try again.");
+  }
+}
+
 $("clearScoreDialog").addEventListener("close",()=>{pendingClearScore=null;});
 $("clearThisRound").addEventListener("click",()=>clearPendingScore(false));
 $("clearBothRounds").addEventListener("click",()=>clearPendingScore(true));

@@ -117,7 +117,10 @@
 
     <section id="historyView" class="view">
       <div class="panel">
-        <div class="panel-heading"><div><span class="eyebrow">PAST RESULTS</span><h2>Submission History</h2></div></div>
+        <div class="panel-heading history-export-heading">
+          <div><span class="eyebrow">PAST RESULTS</span><h2>Submission History</h2></div>
+          <button id="exportScores" class="button secondary" type="button">Download Excel</button>
+        </div>
         <div class="history-filters">
           <select id="historyCategory"><option value="">All categories</option><option value="Explorer">Explorers · Ages 5–7</option><option value="Innovator">Innovators · Ages 7–10</option><option value="Techies">Techies · Ages 10–15</option></select>
           <input id="historySearch" class="search-input" placeholder="Search team…">

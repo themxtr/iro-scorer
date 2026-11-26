@@ -362,6 +362,10 @@
     gap: 12px;
   }
 
+  .scorer-body .history-export-heading {
+    flex-wrap: wrap;
+  }
+
   .scorer-body #submitScore {
     flex: 1 1 100%;
   }
