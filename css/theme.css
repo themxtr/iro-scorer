@@ -384,7 +384,33 @@ body {
 }
 
 .run-time-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
   min-width: 210px;
+}
+
+.run-time-picker {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  width: min(290px, 100%);
+}
+
+.run-time-picker label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--muted);
+  font-size: .72rem;
+  font-weight: 700;
+}
+
+.run-time-picker select {
+  width: 100%;
+  min-width: 0;
+  padding: 8px 6px;
+  font-size: .9rem;
 }
 
 .run-time-field span,

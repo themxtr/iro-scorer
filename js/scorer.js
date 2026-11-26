@@ -264,7 +264,7 @@ document.querySelectorAll(".round-options button").forEach(button=>button.addEve
   document.querySelectorAll(".round-options button").forEach(item=>item.classList.remove("selected"));button.classList.add("selected");
   $("scoreCategory").textContent=categoryLabel(selectedCategory);$("scoreTeam").textContent=selectedTeam.name;$("scoreRound").textContent=`Round ${selectedRound}`;
   $("scoreSheetPanel").classList.remove("hidden");
-  $("runTimeInput").value="";
+  resetRunTimeControls();
   $("scoreSheetTitle").textContent=`${CATEGORIES[selectedCategory].label} Score Sheet`;
   sheetApi=createScoreSheet(
     selectedCategory,
@@ -393,6 +393,52 @@ function parseRunTime(value){
   if(!match)return null;
   return (Number(match[1])*60+Number(match[2]))*1000+Number(match[3]);
 }
+function formatRunTimeInput(value){
+  const trimmed=value.trim();
+  if(/^\d{1,3}:[0-5]\d:\d{3}$/.test(trimmed))return trimmed;
+  const digits=trimmed.replace(/\D/g,"").slice(0,8);
+  if(digits.length===8)return `${digits.slice(0,3)}:${digits.slice(3,5)}:${digits.slice(5)}`;
+  if(digits.length>4)return `${digits.slice(0,2)}:${digits.slice(2,4)}:${digits.slice(4)}`;
+  if(digits.length>2)return `${digits.slice(0,2)}:${digits.slice(2)}`;
+  return digits;
+}
+function initializeRunTimeControls(){
+  const optionsFor=(select,maximum,padding)=>{
+    for(let value=0;value<=maximum;value++){
+      const option=document.createElement("option");
+      option.value=String(value);
+      option.textContent=String(value).padStart(padding,"0");
+      select.append(option);
+    }
+  };
+  optionsFor($("runTimeMinutes"),999,2);
+  optionsFor($("runTimeSeconds"),59,2);
+  optionsFor($("runTimeMilliseconds"),999,3);
+  $("runTimeInput").addEventListener("input",()=>{
+    const input=$("runTimeInput");
+    input.value=formatRunTimeInput(input.value);
+    const milliseconds=parseRunTime(input.value);
+    if(milliseconds!==null)syncRunTimeWheels(milliseconds);
+  });
+  ["runTimeMinutes","runTimeSeconds","runTimeMilliseconds"].forEach(id=>
+    $(id).addEventListener("change",syncRunTimeInputFromWheels)
+  );
+}
+function syncRunTimeWheels(milliseconds){
+  $("runTimeMinutes").value=String(Math.floor(milliseconds/60000));
+  $("runTimeSeconds").value=String(Math.floor(milliseconds/1000)%60);
+  $("runTimeMilliseconds").value=String(milliseconds%1000);
+}
+function syncRunTimeInputFromWheels(){
+  const minutes=$("runTimeMinutes").value;
+  const seconds=$("runTimeSeconds").value;
+  const milliseconds=$("runTimeMilliseconds").value;
+  $("runTimeInput").value=`${minutes.padStart(2,"0")}:${seconds.padStart(2,"0")}:${milliseconds.padStart(3,"0")}`;
+}
+function resetRunTimeControls(){
+  $("runTimeInput").value="";
+  ["runTimeMinutes","runTimeSeconds","runTimeMilliseconds"].forEach(id=>$(id).value="0");
+}
 function formatResultTime(result){
   const milliseconds=Number(result.actualTimeMilliseconds ?? Number(result.actualTimeTaken ?? result.actualTimeSeconds ?? 0)*1000);
   const minutes=Math.floor(milliseconds/60000);
@@ -403,4 +449,5 @@ function formatResultTime(result){
 function escapeHtml(value){const div=document.createElement("div");div.textContent=value||"";return div.innerHTML;}
 function toast(message){const el=$("toast");el.textContent=message;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),2600);}
 
+initializeRunTimeControls();
 initFirebase();

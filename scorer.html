@@ -100,11 +100,16 @@
         <form id="scoreSheet"></form>
         <div class="score-review">
           <div><span>Total score</span><strong id="liveTotal">0</strong></div>
-          <label class="run-time-field" for="runTimeInput">
-            Run time <span>min : sec : milliseconds</span>
+          <div class="run-time-field">
+            <label for="runTimeInput">Run time <span>min : sec : milliseconds</span></label>
             <input id="runTimeInput" name="runTime" type="text" inputmode="numeric" autocomplete="off" placeholder="00:00:000" maxlength="10" pattern="[0-9]{1,3}:[0-5][0-9]:[0-9]{3}" aria-describedby="runTimeHelp" form="scoreSheet" required>
-            <small id="runTimeHelp" class="muted">Enter as MM:SS:MMM, for example 01:23:456.</small>
-          </label>
+            <div class="run-time-picker" aria-label="Scrollable time picker">
+              <label for="runTimeMinutes">Min<select id="runTimeMinutes" aria-label="Minutes"></select></label>
+              <label for="runTimeSeconds">Sec<select id="runTimeSeconds" aria-label="Seconds"></select></label>
+              <label for="runTimeMilliseconds">Ms<select id="runTimeMilliseconds" aria-label="Milliseconds"></select></label>
+            </div>
+            <small id="runTimeHelp" class="muted">Type MMSSMMM digits (0123456 = 01:23:456), or use the scroll pickers.</small>
+          </div>
           <button id="submitScore" class="button primary" type="submit" form="scoreSheet">UPDATE SCORE</button>
         </div>
       </div>
