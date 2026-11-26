@@ -15,7 +15,10 @@
 <body class="scorer-body">
   <aside class="sidebar">
     <div class="sidebar-brand"><img class="brand-logo" src="assets/iro-2026-logo.png" alt="Indian Robotics Olympiad logo"><div><strong>IRO 2026</strong><span>NATIONALS</span></div></div>
-    <nav>
+    <button id="menuToggle" class="menu-toggle" type="button" aria-label="Open navigation menu" aria-controls="scorerNavigation" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav id="scorerNavigation" aria-label="Scorer navigation">
       <button class="nav-item active" data-view="dashboard" type="button">Dashboard</button>
       <button class="nav-item" data-view="teams" type="button">Manage Teams</button>
       <button class="nav-item" data-view="scores" type="button">Enter Scores</button>

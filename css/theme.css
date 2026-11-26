@@ -875,3 +875,37 @@ body {
   background: var(--panel);
   color: var(--text);
 }
+
+.scorer-body .menu-toggle {
+  display: none;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.scorer-body .menu-toggle span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: currentColor;
+  transition: transform .15s ease, opacity .15s ease;
+}
+
+.scorer-body .sidebar.menu-open .menu-toggle span:first-child {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.scorer-body .sidebar.menu-open .menu-toggle span:nth-child(2) {
+  opacity: 0;
+}
+
+.scorer-body .sidebar.menu-open .menu-toggle span:last-child {
+  transform: translateY(-6px) rotate(-45deg);
+}

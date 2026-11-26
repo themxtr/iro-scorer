@@ -134,6 +134,7 @@ function reportFirebaseError(error) {
 }
 
 document.querySelectorAll(".nav-item").forEach(button => button.addEventListener("click", () => {
+  setNavigationOpen(false);
   document.querySelectorAll(".nav-item").forEach(item=>item.classList.remove("active"));
   document.querySelectorAll(".view").forEach(view=>view.classList.remove("active"));
   button.classList.add("active");
@@ -141,6 +142,24 @@ document.querySelectorAll(".nav-item").forEach(button => button.addEventListener
   $(`${view}View`).classList.add("active");
   $("viewTitle").textContent = button.textContent;
 }));
+const sidebar = document.querySelector(".sidebar");
+const menuToggle = $("menuToggle");
+const setNavigationOpen = isOpen => {
+  sidebar.classList.toggle("menu-open", isOpen);
+  menuToggle.setAttribute("aria-expanded", String(isOpen));
+  menuToggle.setAttribute("aria-label", isOpen ? "Close navigation menu" : "Open navigation menu");
+};
+menuToggle.addEventListener("click", () => {
+  setNavigationOpen(menuToggle.getAttribute("aria-expanded") !== "true");
+});
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") setNavigationOpen(false);
+});
+document.addEventListener("click", event => {
+  if (sidebar.classList.contains("menu-open") && !sidebar.contains(event.target)) {
+    setNavigationOpen(false);
+  }
+});
 $("quickScore").addEventListener("click",()=>document.querySelector('[data-view="scores"]').click());
 
 $("teamForm").addEventListener("submit", async event=>{
