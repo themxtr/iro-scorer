@@ -590,35 +590,14 @@ body {
   transform: translateY(-50%);
 }
 
-.public-body .iro-intro {
-  max-width: 1100px;
-  margin: 8px auto 20px;
-  padding: 0 16px;
-  color: var(--public-text);
-  text-align: center;
-}
-
-.public-body .iro-intro p {
-  margin: 6px 0;
-}
-
-.public-body .iro-tagline {
-  font-weight: 700;
-}
-
-.public-body .iro-categories {
-  color: var(--public-muted);
-  font-size: .9rem;
-}
-
 .public-body .iro-about {
   display: grid;
   grid-template-columns: 110px minmax(0, 1fr);
   align-items: center;
   gap: 20px;
   max-width: 1000px;
-  margin: 36px auto;
-  padding: 24px 16px;
+  margin: 24px auto;
+  padding: 20px 16px;
   border-top: 1px solid var(--public-border);
   color: var(--public-text);
   text-align: left;
@@ -668,7 +647,6 @@ body {
 }
 
 :root:fullscreen .public-header,
-:root:fullscreen .iro-intro,
 :root:fullscreen .iro-about,
 :root:fullscreen .leaderboard-heading,
 :root:fullscreen .leaderboard-footer,
